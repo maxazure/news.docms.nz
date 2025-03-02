@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>科技新闻</title>
+    <title>{{ content.split('</h1>')|first|replace('<h1>', '')|safe if '<h1>' in content else '科技新闻' }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
@@ -32,9 +32,10 @@
             font-size: 1.5em;
         }
         p {
-            margin-bottom: 24px;
-            font-size: 16px;
+            margin-bottom: 20px;
+            font-size: 17px;
             text-align: justify;
+            line-height: 1.7;
         }
         a {
             color: #3498db;
@@ -45,20 +46,27 @@
         }
         @media (max-width: 600px) {
             body {
-                padding: 15px;
+                padding: 0;
+                max-width: 100%;
             }
             article {
-                padding: 20px;
+                padding: 20px 15px;
+                border-radius: 0;
+                box-shadow: none;
             }
             p {
-                font-size: 15px;
-                line-height: 1.7;
+                font-size: 16px;
+                line-height: 2.0;
+                margin-bottom: 22px;
             }
             h1 {
-                font-size: 1.8em;
+                font-size: 1.7em;
+                line-height: 1.5;
             }
             h2 {
-                font-size: 1.4em;
+                font-size: 1.3em;
+                line-height: 1.5;
+                margin-top: 20px;
             }
         }
     </style>

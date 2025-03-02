@@ -7,7 +7,7 @@ services:
     ports:
       - "8009:8009"
     volumes:
-      - /Users/maxazure/projects/news.docms.nz/news:/app/news
+      - ${NEWS_FILE_PATH}:/app/news
     restart: unless-stopped
     environment:
       - FLASK_ENV=production
