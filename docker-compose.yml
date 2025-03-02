@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  news-app:
+    build: .
+    container_name: news-docms
+    ports:
+      - "8009:8009"
+    volumes:
+      - /Users/maxazure/projects/news.docms.nz/news:/app/news
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
