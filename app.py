@@ -102,15 +102,15 @@ def save_file():
     if not filename or filename == 'new':
         filename = datetime.now().strftime('%Y%m%d')
     
+    news_path = os.path.join('news', f'{filename}.md')
+
+    # 如果目标文件已存在且不是编辑当前文件，则返回错误，避免覆盖已有内容
+    if os.path.exists(news_path) and original_filename != filename:
+        return jsonify({'success': False, 'message': f'文件 {filename}.md 已存在，请使用其他文件名'}), 400
+
     # 检查文件名是否有变更，如果有则需要处理文件重命名
     if original_filename and original_filename != filename and original_filename != 'new':
         original_path = os.path.join('news', f'{original_filename}.md')
-        # 如果新文件名已存在，返回错误
-        new_path = os.path.join('news', f'{filename}.md')
-        if os.path.exists(new_path) and os.path.exists(original_path):
-            return jsonify({'success': False, 'message': f'文件 {filename}.md 已存在，请使用其他文件名'}), 400
-    
-    news_path = os.path.join('news', f'{filename}.md')
     with open(news_path, 'w', encoding='utf-8') as f:
         f.write(content)
     
