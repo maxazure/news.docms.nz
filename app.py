@@ -8,19 +8,26 @@ from dotenv import load_dotenv
 # 加载.env文件中的环境变量
 load_dotenv()
 
+# 新闻文件存储目录，可通过环境变量 NEWS_FILE_PATH 配置
+NEWS_DIR = os.getenv("NEWS_FILE_PATH", "news")
+# 确保新闻目录存在，避免初次运行时因目录缺失导致报错
+os.makedirs(NEWS_DIR, exist_ok=True)
+
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(16))  # 从环境变量获取密钥，如果不存在则生成随机密钥
 # 使用默认的基于cookie的session，确保session能正常工作
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)  # 设置session过期时间为1年
 
-# 从环境变量获取用户认证信息
+# 从环境变量获取用户认证信息，如果未设置则使用默认账号
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin')
 USERS = {
-    os.getenv('ADMIN_USERNAME'): os.getenv('ADMIN_PASSWORD')
+    ADMIN_USERNAME: ADMIN_PASSWORD
 }
 
 @app.route('/<filename>')
 def show_news(filename):
-    news_path = os.path.join('news', f'{filename}.md')
+    news_path = os.path.join(NEWS_DIR, f'{filename}.md')
     if not os.path.exists(news_path):
         return '404 - 新闻未找到', 404
     
@@ -34,7 +41,7 @@ def show_news(filename):
 @app.route('/page/<int:page>')
 def index(page=1):
     # 列出所有新闻文件并按时间倒序排序
-    news_files = [f.replace('.md', '') for f in os.listdir('news') if f.endswith('.md')]
+    news_files = [f.replace('.md', '') for f in os.listdir(NEWS_DIR) if f.endswith('.md')]
     news_files.sort(reverse=True)
     
     # 分页处理
@@ -81,7 +88,7 @@ def editor(filename):
         flash('请先登录！')
         return redirect(url_for('login'))
         
-    news_path = os.path.join('news', f'{filename}.md')
+    news_path = os.path.join(NEWS_DIR, f'{filename}.md')
     content = ''
     if os.path.exists(news_path):
         with open(news_path, 'r', encoding='utf-8') as f:
@@ -102,23 +109,23 @@ def save_file():
     if not filename or filename == 'new':
         filename = datetime.now().strftime('%Y%m%d')
     
-    news_path = os.path.join('news', f'{filename}.md')
+    news_path = os.path.join(NEWS_DIR, f'{filename}.md')
 
     # 如果目标文件已存在且不是编辑当前文件，则返回错误，避免覆盖已有内容
     if os.path.exists(news_path) and original_filename != filename:
         return jsonify({'success': False, 'message': f'文件 {filename}.md 已存在，请使用其他文件名'}), 400
 
-    # 检查文件名是否有变更，如果有则需要处理文件重命名
+    # 如果是重命名操作，记录旧文件路径，稍后删除
+    original_path = None
     if original_filename and original_filename != filename and original_filename != 'new':
-        original_path = os.path.join('news', f'{original_filename}.md')
+        original_path = os.path.join(NEWS_DIR, f'{original_filename}.md')
+
     with open(news_path, 'w', encoding='utf-8') as f:
         f.write(content)
-    
-    # 如果是重命名操作，在保存新文件后删除原文件
-    if original_filename and original_filename != filename and original_filename != 'new':
-        original_path = os.path.join('news', f'{original_filename}.md')
-        if os.path.exists(original_path):
-            os.remove(original_path)
+
+    # 删除旧文件（若存在）
+    if original_path and os.path.exists(original_path):
+        os.remove(original_path)
     
     return jsonify({'success': True, 'filename': filename})
 
@@ -128,7 +135,7 @@ def delete_file(filename):
     if not session.get('logged_in'):
         return jsonify({'success': False, 'message': '未授权，请先登录'}), 401
     
-    news_path = os.path.join('news', f'{filename}.md')
+    news_path = os.path.join(NEWS_DIR, f'{filename}.md')
     if not os.path.exists(news_path):
         return jsonify({'success': False, 'message': f'文件 {filename}.md 不存在'}), 404
     
