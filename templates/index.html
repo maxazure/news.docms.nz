@@ -156,13 +156,13 @@
                 {% endif %}
             </div>
         </div>
-        {% for news_file in news_files %}
+        {% for item in news_items %}
         <div class="news-item">
-            <a href="/{{ news_file }}">{{ news_file }}</a>
+            <a href="/{{ item.filename }}">{{ item.title }}</a>
             {% if session.get('logged_in') %}
             <div>
-                <a href="/editor/{{ news_file }}" class="btn btn-edit">编辑</a>
-                <button class="btn btn-delete" onclick="deleteNews('{{ news_file }}')">删除</button>
+                <a href="/editor/{{ item.filename }}" class="btn btn-edit">编辑</a>
+                <button class="btn btn-delete" onclick="deleteNews('{{ item.filename }}')">删除</button>
             </div>
             {% endif %}
         </div>
