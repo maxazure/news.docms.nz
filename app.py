@@ -13,10 +13,14 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(16))  # 从环�
 # 使用默认的基于cookie的session，确保session能正常工作
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)  # 设置session过期时间为1年
 app.config['NEWS_DIR'] = os.getenv('NEWS_DIR', 'news') # 新增：新闻文件存储目录
+# 确保新闻目录存在，避免初次运行时因目录缺失导致报错
+os.makedirs(app.config['NEWS_DIR'], exist_ok=True)
 
-# 从环境变量获取用户认证信息
+# 从环境变量获取用户认证信息，如果未设置则使用默认账号
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin')
 USERS = {
-    os.getenv('ADMIN_USERNAME'): os.getenv('ADMIN_PASSWORD')
+    ADMIN_USERNAME: ADMIN_PASSWORD
 }
 
 import re
