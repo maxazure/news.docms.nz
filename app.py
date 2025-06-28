@@ -213,5 +213,9 @@ def delete_file(filename):
     
     return jsonify({'success': True, 'message': f'文件 {filename} 已成功删除'})
 
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
+
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
