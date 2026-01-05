@@ -3,7 +3,6 @@ Flask 应用主文件 - news.docms.nz
 """
 from flask import Flask, request, jsonify, render_template, redirect, url_for, send_from_directory, make_response
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 import os
 import markdown
 import re
@@ -28,8 +27,9 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 # 启用 CORS
 CORS(app, supports_credentials=True, origins='*')
 
-# 初始化数据库
-db = SQLAlchemy(app)
+# 导入模型（使用 models.py 中的 db 实例）
+from models import db, User, Article, Category, Setting
+db.init_app(app)
 
 # 初始化 JWT 认证
 from auth import init_app as init_jwt, generate_tokens, jwt_required, admin_required, get_token_from_request
