@@ -121,24 +121,41 @@ def show_news(filename):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
-    """登录页面（向后兼容旧版）"""
-    token = get_token_from_request()
-    if token:
-        from auth import decode_token
-        result = decode_token(token)
-        if result['success']:
-            return redirect(url_for('index'))
-
-    return render_template('login.html')
+    """登录页面 - 返回 Vue SPA"""
+    return render_template('index.html')
 
 
 @app.route('/logout')
 def logout_page():
     """登出页面"""
-    response = make_response(redirect(url_for('index')))
+    response = make_response(redirect('/'))
     response.set_cookie('access_token', '', expires=0)
     response.set_cookie('refresh_token', '', expires=0)
     return response
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register_page():
+    """注册页面 - 返回 Vue SPA"""
+    return render_template('index.html')
+
+
+@app.route('/profile')
+def profile_page():
+    """个人中心 - 返回 Vue SPA"""
+    return render_template('index.html')
+
+
+@app.route('/admin')
+def admin_page():
+    """管理后台 - 返回 Vue SPA"""
+    return render_template('index.html')
+
+
+@app.route('/editor/<path:filename>')
+def editor_page(filename):
+    """编辑器页面"""
+    return render_template('index.html')
 
 
 # ==================== API 路由 ====================
