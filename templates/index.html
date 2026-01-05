@@ -617,6 +617,7 @@ const api = {
 };
 
 const app = Vue.createApp({
+    delimiters: ['[[', ']]'],
     setup() {
         // 状态
         const currentPage = Vue.ref('home');
