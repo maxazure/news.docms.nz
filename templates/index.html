@@ -7,380 +7,278 @@
     <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-    <div id="app">
-        <!-- 头部导航 -->
-        <header class="header">
-            <div class="container">
-                <a href="/" class="logo">科技新闻</a>
-                <nav class="nav">
-                    <a href="/">首页</a>
-                    <template v-if="authStore.isLoggedIn">
-                        <a href="/admin">管理后台</a>
-                        <a href="/profile">个人中心</a>
-                        <span class="username">{{ authStore.user?.username }}</span>
-                        <a href="#" @click.prevent="logout">退出</a>
-                    </template>
-                    <template v-else>
-                        <a href="/login">登录</a>
-                        <a href="/register">注册</a>
-                    </template>
-                </nav>
+{% verbatim %}
+<div id="app">
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">科技新闻</a>
+            <nav class="nav">
+                <a href="/">首页</a>
+                <template v-if="authStore.isLoggedIn">
+                    <a href="/admin">管理后台</a>
+                    <a href="/profile">个人中心</a>
+                    <span class="username">{{ authStore.user?.username || '' }}</span>
+                    <a href="#" @click.prevent="logout">退出</a>
+                </template>
+                <template v-else>
+                    <a href="/login">登录</a>
+                    <a href="/register">注册</a>
+                </template>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="home" v-if="currentPage === 'home'">
+                <div class="article-list" v-if="articles && articles.length > 0">
+                    <article class="article-card" v-for="article in articles" :key="article.id">
+                        <h2><a :href="'/article/' + article.slug">{{ article.title }}</a></h2>
+                        <div class="article-meta">
+                            <span v-if="article.category_name">{{ article.category_name }}</span>
+                            <span v-if="article.author_name"> | {{ article.author_name }}</span>
+                            <span> | {{ formatDate(article.published_at) }}</span>
+                            <span> | 阅读: {{ article.view_count }}</span>
+                        </div>
+                        <p class="article-excerpt">{{ article.excerpt }}</p>
+                        <a :href="'/article/' + article.slug" class="btn btn-primary btn-small">阅读全文</a>
+                    </article>
+                </div>
+                <div v-else class="no-articles"><p>暂无文章</p></div>
             </div>
-        </header>
 
-        <!-- 主内容区 -->
-        <main class="main">
-            <div class="container">
-                <!-- 首页 -->
-                <div class="home" v-if="currentPage === 'home'">
-                    <div class="article-list" v-if="articles.length > 0">
-                        <article class="article-card" v-for="article in articles" :key="article.id">
-                            <h2>
-                                <a :href="'/article/' + article.slug">{{ article.title }}</a>
-                            </h2>
-                            <div class="article-meta">
-                                <span v-if="article.category_name">{{ article.category_name }}</span>
-                                <span v-if="article.author_name"> | {{ article.author_name }}</span>
-                                <span> | {{ formatDate(article.published_at) }}</span>
-                                <span> | 阅读: {{ article.view_count }}</span>
-                            </div>
-                            <p class="article-excerpt">{{ article.excerpt }}</p>
-                            <div class="article-actions">
-                                <a :href="'/article/' + article.slug" class="btn btn-primary btn-small">阅读全文</a>
-                            </div>
-                        </article>
-                    </div>
-                    <div v-else class="no-articles">
-                        <p>暂无文章</p>
-                    </div>
-
-                    <div class="pagination" v-if="totalPages > 1">
-                        <a v-if="currentPageNum > 1" @click="goToPage(currentPageNum - 1)">上一页</a>
-                        <span v-for="p in totalPages" :key="p" :class="{ active: p === currentPageNum }">
-                            <a v-if="p !== currentPageNum" @click="goToPage(p)">{{ p }}</a>
-                            <span v-else>{{ p }}</span>
-                        </span>
-                        <a v-if="currentPageNum < totalPages" @click="goToPage(currentPageNum + 1)">下一页</a>
-                    </div>
+            <div class="article-detail" v-else-if="currentPage === 'article'">
+                <h1>{{ article?.title }}</h1>
+                <div class="article-meta" v-if="article">
+                    <span v-if="article.category_name">分类: {{ article.category_name }}</span>
+                    <span v-if="article.author_name"> | 作者: {{ article.author_name }}</span>
+                    <span> | {{ formatDate(article.published_at) }}</span>
+                    <span> | 阅读: {{ article.view_count }}</span>
                 </div>
+                <div class="article-content" v-html="article?.html_content" v-if="article"></div>
+                <a href="/" class="btn btn-secondary" style="margin-top: 20px">返回首页</a>
+            </div>
 
-                <!-- 文章详情页 -->
-                <div class="article-detail" v-else-if="currentPage === 'article'">
-                    <h1>{{ article?.title }}</h1>
-                    <div class="article-meta" v-if="article">
-                        <span v-if="article.category_name">分类: {{ article.category_name }}</span>
-                        <span v-if="article.author_name"> | 作者: {{ article.author_name }}</span>
-                        <span> | 发布于: {{ formatDate(article.published_at) }}</span>
-                        <span> | 阅读: {{ article.view_count }}</span>
-                    </div>
-                    <div class="article-content" v-if="article" v-html="article.html_content"></div>
-                    <div v-else class="loading">
-                        <p>加载中...</p>
-                    </div>
-                    <div style="margin-top: 30px;">
-                        <a href="/" class="btn btn-secondary">返回首页</a>
-                    </div>
-                </div>
-
-                <!-- 登录页 -->
-                <div class="auth-page" v-else-if="currentPage === 'login'">
-                    <div class="auth-card">
-                        <h1>登录</h1>
-                        <div v-if="error" class="error-message">{{ error }}</div>
-                        <form @submit.prevent="handleLogin">
-                            <div class="form-group">
-                                <label>用户名或邮箱</label>
-                                <input type="text" v-model="loginForm.username" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>密码</label>
-                                <input type="password" v-model="loginForm.password" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%">登录</button>
-                        </form>
-                        <div class="auth-links">
-                            <p>还没有账号？<a href="/register">立即注册</a></p>
-                            <p><a href="/">返回首页</a></p>
+            <div class="auth-page" v-else-if="currentPage === 'login'">
+                <div class="auth-card">
+                    <h1>登录</h1>
+                    <div v-if="error" class="error-message">{{ error }}</div>
+                    <form @submit.prevent="handleLogin">
+                        <div class="form-group">
+                            <label>用户名或邮箱</label>
+                            <input type="text" v-model="loginForm.username" class="form-control" required>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 注册页 -->
-                <div class="auth-page" v-else-if="currentPage === 'register'">
-                    <div class="auth-card">
-                        <h1>注册</h1>
-                        <div v-if="error" class="error-message">{{ error }}</div>
-                        <form @submit.prevent="handleRegister">
-                            <div class="form-group">
-                                <label>用户名</label>
-                                <input type="text" v-model="registerForm.username" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>邮箱</label>
-                                <input type="email" v-model="registerForm.email" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>密码</label>
-                                <input type="password" v-model="registerForm.password" class="form-control" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%">注册</button>
-                        </form>
-                        <div class="auth-links">
-                            <p>已有账号？<a href="/login">立即登录</a></p>
-                            <p><a href="/">返回首页</a></p>
+                        <div class="form-group">
+                            <label>密码</label>
+                            <input type="password" v-model="loginForm.password" class="form-control" required>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 个人中心页 -->
-                <div class="profile-page" v-else-if="currentPage === 'profile'">
-                    <div class="profile-card">
-                        <h1>个人中心</h1>
-                        <div class="user-info">
-                            <div class="info-item">
-                                <label>用户名</label>
-                                <span>{{ authStore.user?.username }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>邮箱</label>
-                                <span>{{ authStore.user?.email }}</span>
-                            </div>
-                            <div class="info-item">
-                                <label>角色</label>
-                                <span>{{ authStore.user?.role === 'admin' ? '管理员' : '普通用户' }}</span>
-                            </div>
-                        </div>
-                        <div class="logout-section">
-                            <button @click="logout" class="btn btn-danger" style="width: 100%">退出登录</button>
-                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%">登录</button>
+                    </form>
+                    <div class="auth-links">
+                        <p>还没有账号？<a href="/register">立即注册</a></p>
+                        <p><a href="/">返回首页</a></p>
                     </div>
                 </div>
             </div>
-        </main>
 
-        <!-- 页脚 -->
-        <footer class="footer">
-            <p>&copy; 2026 news.docms.nz - 科技新闻分享平台</p>
-        </footer>
-    </div>
+            <div class="auth-page" v-else-if="currentPage === 'register'">
+                <div class="auth-card">
+                    <h1>注册</h1>
+                    <div v-if="error" class="error-message">{{ error }}</div>
+                    <form @submit.prevent="handleRegister">
+                        <div class="form-group">
+                            <label>用户名</label>
+                            <input type="text" v-model="registerForm.username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>邮箱</label>
+                            <input type="email" v-model="registerForm.email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>密码</label>
+                            <input type="password" v-model="registerForm.password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%">注册</button>
+                    </form>
+                    <div class="auth-links">
+                        <p>已有账号？<a href="/login">立即登录</a></p>
+                        <p><a href="/">返回首页</a></p>
+                    </div>
+                </div>
+            </div>
 
-    <!-- 引入依赖 -->
-    <script src="/static/lib/vue.min.js"></script>
-    <script src="/static/lib/pinia.min.js"></script>
-    <script src="/static/lib/marked.min.js"></script>
+            <div class="profile-page" v-else-if="currentPage === 'profile'">
+                <div class="profile-card">
+                    <h1>个人中心</h1>
+                    <div class="user-info">
+                        <div class="info-item"><label>用户名</label><span>{{ authStore.user?.username }}</span></div>
+                        <div class="info-item"><label>邮箱</label><span>{{ authStore.user?.email }}</span></div>
+                        <div class="info-item"><label>角色</label><span>{{ authStore.user?.role === 'admin' ? '管理员' : '普通用户' }}</span></div>
+                    </div>
+                    <button @click="logout" class="btn btn-danger" style="width: 100%; margin-top: 20px">退出登录</button>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    <script>
-        const { createApp, ref, computed, onMounted, watch } = Vue;
-        const { createPinia, defineStore } = Pinia;
+    <footer class="footer">
+        <p>&copy; 2026 news.docms.nz - 科技新闻分享平台</p>
+    </footer>
+</div>
+{% endverbatim %}
 
-        // 认证 Store
-        const useAuthStore = defineStore('auth', {
-            state: () => ({
-                user: JSON.parse(localStorage.getItem('user') || 'null'),
-                token: localStorage.getItem('access_token') || null
-            }),
-            getters: {
-                isLoggedIn: (state) => !!state.token,
-                isAdmin: (state) => state.user?.role === 'admin'
-            },
-            actions: {
-                setUser(user, token) {
-                    this.user = user;
-                    this.token = token;
-                    localStorage.setItem('user', JSON.stringify(user));
-                    localStorage.setItem('access_token', token);
-                },
-                logout() {
-                    this.user = null;
-                    this.token = null;
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                }
+<script src="/static/lib/vue.min.js"></script>
+<script src="/static/lib/pinia.min.js"></script>
+<script>
+const { createApp, ref, computed, onMounted } = Vue;
+const { createPinia, defineStore } = Pinia;
+
+const useAuthStore = defineStore('auth', {
+    state: () => ({
+        user: JSON.parse(localStorage.getItem('user') || 'null'),
+        token: localStorage.getItem('access_token') || null
+    }),
+    getters: {
+        isLoggedIn: (state) => !!state.token,
+        isAdmin: (state) => state.user?.role === 'admin'
+    },
+    actions: {
+        setUser(user, token) {
+            this.user = user;
+            this.token = token;
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('access_token', token);
+        },
+        logout() {
+            this.user = null;
+            this.token = null;
+            localStorage.removeItem('user');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+        }
+    }
+});
+
+const api = {
+    async request(url, options = {}) {
+        const token = localStorage.getItem('access_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        const response = await fetch('/api' + url, { ...options, headers: { ...headers, ...options.headers } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '请求失败');
+        return { data };
+    },
+    get(url, params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(query ? url + '?' + query : url);
+    },
+    post(url, data) {
+        return this.request(url, { method: 'POST', body: JSON.stringify(data) });
+    }
+};
+
+const app = createApp({
+    setup() {
+        const pinia = createPinia();
+        const authStore = useAuthStore(pinia);
+        const currentPage = ref('home');
+        const articles = ref([]);
+        const article = ref(null);
+        const totalPages = ref(1);
+        const currentPageNum = ref(1);
+        const error = ref('');
+        const loginForm = ref({ username: '', password: '' });
+        const registerForm = ref({ username: '', email: '', password: '' });
+
+        onMounted(async () => {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                try { await api.get('/auth/me'); } catch (e) { authStore.logout(); }
             }
+            handleRouteChange();
+            window.addEventListener('popstate', handleRouteChange);
         });
 
-        // API 函数
-        const api = {
-            async request(url, options = {}) {
-                const token = localStorage.getItem('access_token');
-                const headers = {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-                };
-
-                const response = await fetch('/api' + url, { ...options, headers: { ...headers, ...options.headers } });
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || '请求失败');
-                }
-                return { data };
-            },
-
-            get(url, params = {}) {
-                const query = new URLSearchParams(params).toString();
-                return this.request(query ? `${url}?${query}` : url);
-            },
-
-            post(url, data) {
-                return this.request(url, { method: 'POST', body: JSON.stringify(data) });
-            }
+        const handleRouteChange = () => {
+            const path = window.location.pathname;
+            if (path === '/' || path.startsWith('/page/')) {
+                currentPage.value = 'home';
+                const page = path === '/' ? 1 : parseInt(path.split('/')[2]) || 1;
+                currentPageNum.value = page;
+                fetchArticles(page);
+            } else if (path.startsWith('/article/')) {
+                currentPage.value = 'article';
+                fetchArticle(path.split('/')[2]);
+            } else if (path === '/login') { currentPage.value = 'login'; }
+            else if (path === '/register') { currentPage.value = 'register'; }
+            else if (path === '/profile') { currentPage.value = 'profile'; }
         };
 
-        // 创建 Vue 应用
-        const app = createApp({
-            setup() {
-                const pinia = createPinia();
-                const authStore = useAuthStore(pinia);
+        const navigateTo = (path) => {
+            window.history.pushState({}, '', path);
+            handleRouteChange();
+        };
 
-                // 页面状态
-                const currentPage = ref('home');
-                const currentPath = ref(window.location.pathname);
+        const fetchArticles = async (page = 1) => {
+            try {
+                const r = await api.get('/articles', { page, per_page: 10 });
+                articles.value = r.data.articles;
+                totalPages.value = r.data.pages;
+            } catch (e) { error.value = e.message; }
+        };
 
-                // 数据
-                const articles = ref([]);
-                const article = ref(null);
-                const totalPages = ref(1);
-                const currentPageNum = ref(1);
-                const error = ref('');
+        const fetchArticle = async (slug) => {
+            article.value = null;
+            try {
+                const r = await api.get('/articles/' + slug);
+                article.value = r.data.article;
+            } catch (e) { error.value = e.message; }
+        };
 
-                // 表单
-                const loginForm = ref({ username: '', password: '' });
-                const registerForm = ref({ username: '', email: '', password: '' });
+        const goToPage = (page) => { navigateTo(page === 1 ? '/' : '/page/' + page); };
 
-                // 初始化认证状态
-                onMounted(async () => {
-                    const token = localStorage.getItem('access_token');
-                    if (token) {
-                        try {
-                            await api.get('/auth/me');
-                        } catch (e) {
-                            authStore.logout();
-                        }
-                    }
-                    handleRouteChange();
-                    window.addEventListener('popstate', handleRouteChange);
-                });
+        const handleLogin = async () => {
+            error.value = '';
+            try {
+                const r = await api.post('/auth/login', loginForm.value);
+                localStorage.setItem('refresh_token', r.data.refresh_token);
+                authStore.setUser(r.data.user, r.data.access_token);
+                navigateTo('/');
+            } catch (e) { error.value = e.message; }
+        };
 
-                // 路由处理
-                const handleRouteChange = () => {
-                    const path = window.location.pathname;
+        const handleRegister = async () => {
+            error.value = '';
+            try {
+                const r = await api.post('/auth/register', registerForm.value);
+                localStorage.setItem('refresh_token', r.data.refresh_token);
+                authStore.setUser(r.data.user, r.data.access_token);
+                navigateTo('/');
+            } catch (e) { error.value = e.message; }
+        };
 
-                    if (path === '/' || path.startsWith('/page/')) {
-                        currentPage.value = 'home';
-                        const page = path === '/' ? 1 : parseInt(path.split('/')[2]) || 1;
-                        currentPageNum.value = page;
-                        fetchArticles(page);
-                    } else if (path.startsWith('/article/')) {
-                        currentPage.value = 'article';
-                        const slug = path.split('/')[2];
-                        fetchArticle(slug);
-                    } else if (path === '/login') {
-                        currentPage.value = 'login';
-                    } else if (path === '/register') {
-                        currentPage.value = 'register';
-                    } else if (path === '/profile') {
-                        currentPage.value = 'profile';
-                    }
-                };
+        const logout = async () => {
+            try { await api.post('/auth/logout'); } catch (e) {}
+            authStore.logout();
+            navigateTo('/');
+        };
 
-                const navigateTo = (path) => {
-                    window.history.pushState({}, '', path);
-                    handleRouteChange();
-                };
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '';
+            return new Date(dateStr).toLocaleDateString('zh-CN');
+        };
 
-                // API 调用
-                const fetchArticles = async (page = 1) => {
-                    try {
-                        const response = await api.get('/articles', { page, per_page: 10 });
-                        articles.value = response.data.articles;
-                        totalPages.value = response.data.pages;
-                    } catch (e) {
-                        error.value = e.message;
-                    }
-                };
+        return {
+            authStore, currentPage, articles, article, totalPages, currentPageNum,
+            error, loginForm, registerForm, goToPage, handleLogin, handleRegister,
+            logout, formatDate
+        };
+    }
+});
 
-                const fetchArticle = async (slug) => {
-                    article.value = null;
-                    try {
-                        const response = await api.get(`/articles/${slug}`);
-                        article.value = response.data.article;
-                    } catch (e) {
-                        error.value = e.message;
-                    }
-                };
-
-                const goToPage = (page) => {
-                    navigateTo(page === 1 ? '/' : `/page/${page}`);
-                };
-
-                // 登录
-                const handleLogin = async () => {
-                    error.value = '';
-                    try {
-                        const response = await api.post('/auth/login', loginForm.value);
-                        const { user, access_token, refresh_token } = response.data;
-                        localStorage.setItem('refresh_token', refresh_token);
-                        authStore.setUser(user, access_token);
-                        navigateTo('/');
-                    } catch (e) {
-                        error.value = e.message;
-                    }
-                };
-
-                // 注册
-                const handleRegister = async () => {
-                    error.value = '';
-                    try {
-                        const response = await api.post('/auth/register', registerForm.value);
-                        const { user, access_token, refresh_token } = response.data;
-                        localStorage.setItem('refresh_token', refresh_token);
-                        authStore.setUser(user, access_token);
-                        navigateTo('/');
-                    } catch (e) {
-                        error.value = e.message;
-                    }
-                };
-
-                // 登出
-                const logout = async () => {
-                    try {
-                        await api.post('/auth/logout');
-                    } catch (e) {
-                        // 忽略错误
-                    }
-                    authStore.logout();
-                    navigateTo('/');
-                };
-
-                // 日期格式化
-                const formatDate = (dateStr) => {
-                    if (!dateStr) return '';
-                    return new Date(dateStr).toLocaleDateString('zh-CN');
-                };
-
-                return {
-                    authStore,
-                    currentPage,
-                    articles,
-                    article,
-                    totalPages,
-                    currentPageNum,
-                    error,
-                    loginForm,
-                    registerForm,
-                    goToPage,
-                    handleLogin,
-                    handleRegister,
-                    logout,
-                    formatDate
-                };
-            }
-        });
-
-        app.use(createPinia());
-        app.mount('#app');
-    </script>
+app.use(createPinia());
+app.mount('#app');
+</script>
 </body>
 </html>
