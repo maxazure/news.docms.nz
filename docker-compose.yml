@@ -9,6 +9,7 @@ services:
     volumes:
       - ${NEWS_FILE_PATH:-./news}:/app/news
       - ./static:/app/static
+      - ./news.db:/app/news.db
     restart: unless-stopped
     environment:
       - FLASK_ENV=production
