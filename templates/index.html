@@ -267,7 +267,14 @@ const app = Vue.createApp({
     }
 });
 
-app.mount('#app');
+// Auto-mount on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        app.mount('#app');
+    });
+} else {
+    app.mount('#app');
+}
 </script>
 </body>
 </html>
