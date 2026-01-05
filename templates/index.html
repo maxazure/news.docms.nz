@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-{% verbatim %}
 <div id="app">
     <header class="header">
         <div class="container">
@@ -17,7 +16,7 @@
                 <template v-if="authStore.isLoggedIn">
                     <a href="/admin">管理后台</a>
                     <a href="/profile">个人中心</a>
-                    <span class="username">{{ authStore.user?.username || '' }}</span>
+                    <span class="username">[[ authStore.user?.username || '' ]]</span>
                     <a href="#" @click.prevent="logout">退出</a>
                 </template>
                 <template v-else>
@@ -33,14 +32,14 @@
             <div class="home" v-if="currentPage === 'home'">
                 <div class="article-list" v-if="articles && articles.length > 0">
                     <article class="article-card" v-for="article in articles" :key="article.id">
-                        <h2><a :href="'/article/' + article.slug">{{ article.title }}</a></h2>
+                        <h2><a :href="'/article/' + article.slug">[[ article.title ]]</a></h2>
                         <div class="article-meta">
-                            <span v-if="article.category_name">{{ article.category_name }}</span>
-                            <span v-if="article.author_name"> | {{ article.author_name }}</span>
-                            <span> | {{ formatDate(article.published_at) }}</span>
-                            <span> | 阅读: {{ article.view_count }}</span>
+                            <span v-if="article.category_name">[[ article.category_name ]]</span>
+                            <span v-if="article.author_name"> | [[ article.author_name ]]</span>
+                            <span> | [[ formatDate(article.published_at) ]]</span>
+                            <span> | 阅读: [[ article.view_count ]]</span>
                         </div>
-                        <p class="article-excerpt">{{ article.excerpt }}</p>
+                        <p class="article-excerpt">[[ article.excerpt ]]</p>
                         <a :href="'/article/' + article.slug" class="btn btn-primary btn-small">阅读全文</a>
                     </article>
                 </div>
@@ -48,12 +47,12 @@
             </div>
 
             <div class="article-detail" v-else-if="currentPage === 'article'">
-                <h1>{{ article?.title }}</h1>
+                <h1>[[ article?.title ]]</h1>
                 <div class="article-meta" v-if="article">
-                    <span v-if="article.category_name">分类: {{ article.category_name }}</span>
-                    <span v-if="article.author_name"> | 作者: {{ article.author_name }}</span>
-                    <span> | {{ formatDate(article.published_at) }}</span>
-                    <span> | 阅读: {{ article.view_count }}</span>
+                    <span v-if="article.category_name">分类: [[ article.category_name ]]</span>
+                    <span v-if="article.author_name"> | 作者: [[ article.author_name ]]</span>
+                    <span> | [[ formatDate(article.published_at) ]]</span>
+                    <span> | 阅读: [[ article.view_count ]]</span>
                 </div>
                 <div class="article-content" v-html="article?.html_content" v-if="article"></div>
                 <a href="/" class="btn btn-secondary" style="margin-top: 20px">返回首页</a>
@@ -62,7 +61,7 @@
             <div class="auth-page" v-else-if="currentPage === 'login'">
                 <div class="auth-card">
                     <h1>登录</h1>
-                    <div v-if="error" class="error-message">{{ error }}</div>
+                    <div v-if="error" class="error-message">[[ error ]]</div>
                     <form @submit.prevent="handleLogin">
                         <div class="form-group">
                             <label>用户名或邮箱</label>
@@ -84,7 +83,7 @@
             <div class="auth-page" v-else-if="currentPage === 'register'">
                 <div class="auth-card">
                     <h1>注册</h1>
-                    <div v-if="error" class="error-message">{{ error }}</div>
+                    <div v-if="error" class="error-message">[[ error ]]</div>
                     <form @submit.prevent="handleRegister">
                         <div class="form-group">
                             <label>用户名</label>
@@ -111,9 +110,9 @@
                 <div class="profile-card">
                     <h1>个人中心</h1>
                     <div class="user-info">
-                        <div class="info-item"><label>用户名</label><span>{{ authStore.user?.username }}</span></div>
-                        <div class="info-item"><label>邮箱</label><span>{{ authStore.user?.email }}</span></div>
-                        <div class="info-item"><label>角色</label><span>{{ authStore.user?.role === 'admin' ? '管理员' : '普通用户' }}</span></div>
+                        <div class="info-item"><label>用户名</label><span>[[ authStore.user?.username ]]</span></div>
+                        <div class="info-item"><label>邮箱</label><span>[[ authStore.user?.email ]]</span></div>
+                        <div class="info-item"><label>角色</label><span>[[ authStore.user?.role === 'admin' ? '管理员' : '普通用户' ]]</span></div>
                     </div>
                     <button @click="logout" class="btn btn-danger" style="width: 100%; margin-top: 20px">退出登录</button>
                 </div>
@@ -125,7 +124,6 @@
         <p>&copy; 2026 news.docms.nz - 科技新闻分享平台</p>
     </footer>
 </div>
-{% endverbatim %}
 
 <script src="/static/lib/vue.min.js"></script>
 <script src="/static/lib/pinia.min.js"></script>
@@ -277,8 +275,10 @@ const app = createApp({
     }
 });
 
-app.use(createPinia());
-app.mount('#app');
+// Change Vue delimiters to avoid Jinja2 conflict
+const vueApp = app.use(createPinia());
+vueApp.config.delimiters = ['[[', ']]'];
+vueApp.mount('#app');
 </script>
 </body>
 </html>
