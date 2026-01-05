@@ -84,9 +84,23 @@ def index():
                            page=1)
 
 
+@app.route('/article/<slug>')
+def show_article(slug):
+    """查看数据库文章"""
+    article = Article.query.filter_by(slug=slug).first()
+    if article:
+        # 增加阅读量
+        article.view_count += 1
+        db.session.commit()
+        # 返回 Vue SPA，由前端渲染
+        return render_template('index.html')
+
+    return '404 - 文章未找到', 404
+
+
 @app.route('/<filename>')
 def show_news(filename):
-    """查看新闻文章"""
+    """查看新闻文章（兼容文件版本和直接访问）"""
     # 尝试从数据库获取
     article = Article.query.filter_by(slug=filename).first()
     if article:
@@ -338,11 +352,13 @@ def get_articles():
     query = Article.query
 
     # 筛选已发布或需要认证
-    if status:
+    # status='null' 字符串表示获取所有文章（管理后台使用）
+    if status and status != 'null':
         query = query.filter_by(status=status)
-    else:
+    elif not status:
         # 默认只返回已发布的
         query = query.filter_by(status='published')
+    # status='null' 时不筛选，返回所有文章
 
     if category_id:
         query = query.filter_by(category_id=category_id)
