@@ -13,10 +13,10 @@
             <a href="/" class="logo">科技新闻</a>
             <nav class="nav">
                 <a href="/">首页</a>
-                <template v-if="authStore.isLoggedIn">
+                <template v-if="isLoggedIn">
                     <a href="/admin">管理后台</a>
                     <a href="/profile">个人中心</a>
-                    <span class="username">[[ authStore.user?.username || '' ]]</span>
+                    <span class="username">{{ user?.username || '' }}</span>
                     <a href="#" @click.prevent="logout">退出</a>
                 </template>
                 <template v-else>
@@ -32,14 +32,14 @@
             <div class="home" v-if="currentPage === 'home'">
                 <div class="article-list" v-if="articles && articles.length > 0">
                     <article class="article-card" v-for="article in articles" :key="article.id">
-                        <h2><a :href="'/article/' + article.slug">[[ article.title ]]</a></h2>
+                        <h2><a :href="'/article/' + article.slug">{{ article.title }}</a></h2>
                         <div class="article-meta">
-                            <span v-if="article.category_name">[[ article.category_name ]]</span>
-                            <span v-if="article.author_name"> | [[ article.author_name ]]</span>
-                            <span> | [[ formatDate(article.published_at) ]]</span>
-                            <span> | 阅读: [[ article.view_count ]]</span>
+                            <span v-if="article.category_name">{{ article.category_name }}</span>
+                            <span v-if="article.author_name"> | {{ article.author_name }}</span>
+                            <span> | {{ formatDate(article.published_at) }}</span>
+                            <span> | 阅读: {{ article.view_count }}</span>
                         </div>
-                        <p class="article-excerpt">[[ article.excerpt ]]</p>
+                        <p class="article-excerpt">{{ article.excerpt }}</p>
                         <a :href="'/article/' + article.slug" class="btn btn-primary btn-small">阅读全文</a>
                     </article>
                 </div>
@@ -47,12 +47,12 @@
             </div>
 
             <div class="article-detail" v-else-if="currentPage === 'article'">
-                <h1>[[ article?.title ]]</h1>
+                <h1>{{ article?.title }}</h1>
                 <div class="article-meta" v-if="article">
-                    <span v-if="article.category_name">分类: [[ article.category_name ]]</span>
-                    <span v-if="article.author_name"> | 作者: [[ article.author_name ]]</span>
-                    <span> | [[ formatDate(article.published_at) ]]</span>
-                    <span> | 阅读: [[ article.view_count ]]</span>
+                    <span v-if="article.category_name">分类: {{ article.category_name }}</span>
+                    <span v-if="article.author_name"> | 作者: {{ article.author_name }}</span>
+                    <span> | {{ formatDate(article.published_at) }}</span>
+                    <span> | 阅读: {{ article.view_count }}</span>
                 </div>
                 <div class="article-content" v-html="article?.html_content" v-if="article"></div>
                 <a href="/" class="btn btn-secondary" style="margin-top: 20px">返回首页</a>
@@ -61,7 +61,7 @@
             <div class="auth-page" v-else-if="currentPage === 'login'">
                 <div class="auth-card">
                     <h1>登录</h1>
-                    <div v-if="error" class="error-message">[[ error ]]</div>
+                    <div v-if="error" class="error-message">{{ error }}</div>
                     <form @submit.prevent="handleLogin">
                         <div class="form-group">
                             <label>用户名或邮箱</label>
@@ -83,7 +83,7 @@
             <div class="auth-page" v-else-if="currentPage === 'register'">
                 <div class="auth-card">
                     <h1>注册</h1>
-                    <div v-if="error" class="error-message">[[ error ]]</div>
+                    <div v-if="error" class="error-message">{{ error }}</div>
                     <form @submit.prevent="handleRegister">
                         <div class="form-group">
                             <label>用户名</label>
@@ -110,9 +110,9 @@
                 <div class="profile-card">
                     <h1>个人中心</h1>
                     <div class="user-info">
-                        <div class="info-item"><label>用户名</label><span>[[ authStore.user?.username ]]</span></div>
-                        <div class="info-item"><label>邮箱</label><span>[[ authStore.user?.email ]]</span></div>
-                        <div class="info-item"><label>角色</label><span>[[ authStore.user?.role === 'admin' ? '管理员' : '普通用户' ]]</span></div>
+                        <div class="info-item"><label>用户名</label><span>{{ user?.username }}</span></div>
+                        <div class="info-item"><label>邮箱</label><span>{{ user?.email }}</span></div>
+                        <div class="info-item"><label>角色</label><span>{{ user?.role === 'admin' ? '管理员' : '普通用户' }}</span></div>
                     </div>
                     <button @click="logout" class="btn btn-danger" style="width: 100%; margin-top: 20px">退出登录</button>
                 </div>
@@ -126,34 +126,25 @@
 </div>
 
 <script src="/static/lib/vue.min.js"></script>
-<script src="/static/lib/pinia.min.js"></script>
 <script>
-const { createApp, ref, computed, onMounted } = Vue;
-const { createPinia, defineStore } = Pinia;
-
-const useAuthStore = defineStore('auth', {
-    state: () => ({
-        user: JSON.parse(localStorage.getItem('user') || 'null'),
-        token: localStorage.getItem('access_token') || null
-    }),
-    getters: {
-        isLoggedIn: (state) => !!state.token,
-        isAdmin: (state) => state.user?.role === 'admin'
+// Simple auth state management
+const authState = Vue.reactive({
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    token: localStorage.getItem('access_token') || null,
+    get isLoggedIn() { return !!this.token; },
+    get isAdmin() { return this.user?.role === 'admin'; },
+    setUser(user, token) {
+        this.user = user;
+        this.token = token;
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('access_token', token);
     },
-    actions: {
-        setUser(user, token) {
-            this.user = user;
-            this.token = token;
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('access_token', token);
-        },
-        logout() {
-            this.user = null;
-            this.token = null;
-            localStorage.removeItem('user');
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-        }
+    logout() {
+        this.user = null;
+        this.token = null;
+        localStorage.removeItem('user');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
     }
 });
 
@@ -176,23 +167,21 @@ const api = {
     }
 };
 
-const app = createApp({
+const app = Vue.createApp({
     setup() {
-        const pinia = createPinia();
-        const authStore = useAuthStore(pinia);
-        const currentPage = ref('home');
-        const articles = ref([]);
-        const article = ref(null);
-        const totalPages = ref(1);
-        const currentPageNum = ref(1);
-        const error = ref('');
-        const loginForm = ref({ username: '', password: '' });
-        const registerForm = ref({ username: '', email: '', password: '' });
+        const currentPage = Vue.ref('home');
+        const articles = Vue.ref([]);
+        const article = Vue.ref(null);
+        const totalPages = Vue.ref(1);
+        const currentPageNum = Vue.ref(1);
+        const error = Vue.ref('');
+        const loginForm = Vue.ref({ username: '', password: '' });
+        const registerForm = Vue.ref({ username: '', email: '', password: '' });
 
-        onMounted(async () => {
+        Vue.onMounted(async () => {
             const token = localStorage.getItem('access_token');
             if (token) {
-                try { await api.get('/auth/me'); } catch (e) { authStore.logout(); }
+                try { await api.get('/auth/me'); } catch (e) { authState.logout(); }
             }
             handleRouteChange();
             window.addEventListener('popstate', handleRouteChange);
@@ -241,7 +230,7 @@ const app = createApp({
             try {
                 const r = await api.post('/auth/login', loginForm.value);
                 localStorage.setItem('refresh_token', r.data.refresh_token);
-                authStore.setUser(r.data.user, r.data.access_token);
+                authState.setUser(r.data.user, r.data.access_token);
                 navigateTo('/');
             } catch (e) { error.value = e.message; }
         };
@@ -251,14 +240,14 @@ const app = createApp({
             try {
                 const r = await api.post('/auth/register', registerForm.value);
                 localStorage.setItem('refresh_token', r.data.refresh_token);
-                authStore.setUser(r.data.user, r.data.access_token);
+                authState.setUser(r.data.user, r.data.access_token);
                 navigateTo('/');
             } catch (e) { error.value = e.message; }
         };
 
         const logout = async () => {
             try { await api.post('/auth/logout'); } catch (e) {}
-            authStore.logout();
+            authState.logout();
             navigateTo('/');
         };
 
@@ -268,17 +257,17 @@ const app = createApp({
         };
 
         return {
-            authStore, currentPage, articles, article, totalPages, currentPageNum,
+            isLoggedIn: Vue.computed(() => authState.isLoggedIn),
+            isAdmin: Vue.computed(() => authState.isAdmin),
+            user: Vue.computed(() => authState.user),
+            currentPage, articles, article, totalPages, currentPageNum,
             error, loginForm, registerForm, goToPage, handleLogin, handleRegister,
             logout, formatDate
         };
     }
 });
 
-// Change Vue delimiters to avoid Jinja2 conflict
-const vueApp = app.use(createPinia());
-vueApp.config.delimiters = ['[[', ']]'];
-vueApp.mount('#app');
+app.mount('#app');
 </script>
 </body>
 </html>
