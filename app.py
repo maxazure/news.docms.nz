@@ -39,6 +39,50 @@ init_jwt(app)
 from models import User, Article, Category, Setting
 
 
+# ==================== 辅助函数 ====================
+
+def generate_excerpt_from_markdown(content, max_length=200):
+    """
+    从 Markdown 内容生成纯文本摘要
+
+    Args:
+        content: Markdown 格式的文本内容
+        max_length: 摘要最大长度
+
+    Returns:
+        纯文本摘要
+    """
+    if not content:
+        return ''
+
+    # 移除代码块
+    clean_content = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
+    # 移除行内代码
+    clean_content = re.sub(r'`[^`]+`', '', clean_content)
+    # 移除链接
+    clean_content = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', clean_content)
+    # 移除标题标记
+    clean_content = re.sub(r'^#+\s*', '', clean_content, flags=re.MULTILINE)
+    # 移除加粗和斜体
+    clean_content = re.sub(r'\*\*([^*]+)\*\*', r'\1', clean_content)
+    clean_content = re.sub(r'\*([^*]+)\*', r'\1', clean_content)
+    clean_content = re.sub(r'__([^_]+)__', r'\1', clean_content)
+    clean_content = re.sub(r'_([^_]+)_', r'\1', clean_content)
+    # 移除无序列表标记
+    clean_content = re.sub(r'^\s*[-*+]\s+', '', clean_content, flags=re.MULTILINE)
+    # 移除有序列表标记
+    clean_content = re.sub(r'^\s*\d+\.\s+', '', clean_content, flags=re.MULTILINE)
+    # 移除引用标记
+    clean_content = re.sub(r'^>\s*', '', clean_content, flags=re.MULTILINE)
+    # 清理多余空格和换行
+    clean_content = re.sub(r'\s+', ' ', clean_content).strip()
+
+    # 截断并添加省略号
+    if len(clean_content) > max_length:
+        return clean_content[:max_length] + '...'
+    return clean_content
+
+
 # ==================== 模板路由（向后兼容） ====================
 
 @app.route('/')
@@ -443,13 +487,17 @@ def create_article():
     # 生成 HTML 内容
     html_content = markdown.markdown(content, extensions=['fenced_code', 'tables'])
 
+    # 生成纯文本摘要（如果没有提供）
+    if not excerpt:
+        excerpt = generate_excerpt_from_markdown(content)
+
     # 创建文章
     article = Article(
         title=title,
         slug=slug,
         content=content,
         html_content=html_content,
-        excerpt=excerpt or content[:200],
+        excerpt=excerpt,
         user_id=request.current_user.id,
         category_id=category_id,
         status=status
@@ -488,7 +536,11 @@ def update_article(slug):
         article.content = data['content'].strip()
         article.html_content = markdown.markdown(article.content, extensions=['fenced_code', 'tables'])
 
-    if 'excerpt' in data:
+        # 如果没有提供摘要且内容改变了，自动生成摘要
+        if 'excerpt' not in data or not data.get('excerpt'):
+            article.excerpt = generate_excerpt_from_markdown(article.content)
+
+    if 'excerpt' in data and data['excerpt']:
         article.excerpt = data['excerpt'].strip()
 
     if 'category_id' in data:

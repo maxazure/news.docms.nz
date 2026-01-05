@@ -1,5 +1,7 @@
 /**
  * news.docms.nz 全局样式
+ * 版本: 2.0
+ * 更新: 性能优化和用户体验增强
  */
 
 /* 基础变量 */
@@ -20,6 +22,7 @@
   --radius: 8px;
   --radius-lg: 15px;
   --transition: all 0.3s ease;
+  --transition-fast: all 0.15s ease;
 }
 
 /* 重置样式 */
@@ -825,5 +828,167 @@ textarea.form-control {
 
   .category-filter {
     justify-content: center;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+}
+
+/* ==================== 性能优化样式 ==================== */
+
+/* 骨架屏加载动画 */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 25px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.skeleton-title {
+  height: 28px;
+  width: 70%;
+  margin-bottom: 15px;
+}
+
+.skeleton-text {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.skeleton-text-short {
+  height: 16px;
+  width: 60%;
+  margin-bottom: 15px;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.skeleton-meta-item {
+  height: 14px;
+  width: 80px;
+}
+
+/* 图片懒加载 */
+img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+img[loading="lazy"].loaded {
+  opacity: 1;
+}
+
+/* 平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 减少动画（用户偏好设置） */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 性能优化：使用 will-change */
+.article-card:hover,
+.btn:hover,
+.btn-icon:hover {
+  will-change: transform;
+}
+
+/* 焦点可见性改进 */
+.btn:focus,
+.btn-icon:focus,
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000;
+    --text-light: #333;
+  }
+
+  .article-card {
+    border: 2px solid var(--border-color);
+  }
+}
+
+/* 深色模式准备 */
+@media (prefers-color-scheme: dark) {
+  /* 为未来的深色模式预留 */
+}
+
+/* 内容可见性优化 */
+.article-content {
+  /* 优化文本渲染 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 图片优化 */
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  loading: lazy;
+}
+
+/* 代码块优化 */
+.article-content pre {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 打印样式 */
+@media print {
+  .header,
+  .footer,
+  .article-actions,
+  .btn,
+  .pagination {
+    display: none !important;
+  }
+
+  .article-detail {
+    box-shadow: none;
+    padding: 0;
+  }
+
+  body {
+    background: white;
   }
 }
