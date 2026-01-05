@@ -4,19 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>科技新闻 - news.docms.nz</title>
+    <meta name="description" content="科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告">
+    <meta name="keywords" content="科技新闻,技术资讯,产品分析,行业报告">
+    <meta name="author" content="news.docms.nz">
+    <!-- Open Graph -->
+    <meta property="og:title" content="科技新闻 - news.docms.nz">
+    <meta property="og:description" content="科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://news.docms.nz">
+    <meta property="og:locale" content="zh_CN">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="科技新闻 - news.docms.nz">
+    <meta name="twitter:description" content="科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
     <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
 </head>
 <body>
+{% raw %}
 <div id="app">
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
     <header class="header">
         <div class="container">
-            <a href="/" class="logo">科技新闻</a>
-            <nav class="nav">
+            <a href="/" class="logo">
+                <span class="logo-icon"></span>
+                科技新闻
+            </a>
+            <button class="mobile-menu-toggle" @click="mobileMenuOpen = !mobileMenuOpen">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="nav" :class="{ 'mobile-open': mobileMenuOpen }">
                 <a href="/">首页</a>
                 <template v-if="isLoggedIn">
-                    <a href="/admin">管理后台</a>
+                    <a href="/admin" v-if="isAdmin">管理后台</a>
                     <a href="/profile">个人中心</a>
-                    <span class="username">[[ user?.username || '' ]]</span>
+                    <span class="username">[[user?.username || '']]</span>
                     <a href="#" @click.prevent="logout">退出</a>
                 </template>
                 <template v-else>
@@ -29,49 +59,150 @@
 
     <main class="main">
         <div class="container">
-            <div class="home" v-if="currentPage === 'home'">
+            <!-- 首页 - 文章列表 -->
+            <div class="home-page" v-if="currentPage === 'home'">
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <input type="text" v-model="searchQuery" @keyup.enter="handleSearch"
+                           placeholder="搜索文章标题或内容..." class="search-input">
+                    <button @click="handleSearch" class="search-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </button>
+                    <button v-if="searchQuery" @click="clearSearch" class="clear-btn" title="清除搜索">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- 分类筛选 -->
+                <div class="category-filter" v-if="categories.length > 0">
+                    <button @click="filterByCategory(null)" :class="{ active: !selectedCategory }" class="category-btn">全部</button>
+                    <button v-for="cat in categories" :key="cat.id" @click="filterByCategory(cat.id)"
+                            :class="{ active: selectedCategory === cat.id }" class="category-btn">
+                        [[cat.name]]
+                    </button>
+                </div>
+
+                <!-- 文章列表 -->
                 <div class="article-list" v-if="articles && articles.length > 0">
                     <article class="article-card" v-for="article in articles" :key="article.id">
-                        <h2><a :href="'/article/' + article.slug">[[ article.title ]]</a></h2>
-                        <div class="article-meta">
-                            <span v-if="article.category_name">[[ article.category_name ]]</span>
-                            <span v-if="article.author_name"> | [[ article.author_name ]]</span>
-                            <span> | [[ formatDate(article.published_at) ]]</span>
-                            <span> | 阅读: [[ article.view_count ]]</span>
+                        <div class="article-card-header">
+                            <span v-if="article.category_name" class="category-tag">[[article.category_name]]</span>
+                            <span class="article-date">[[formatDate(article.published_at)]]</span>
                         </div>
-                        <p class="article-excerpt">[[ article.excerpt ]]</p>
+                        <h2><a :href="'/article/' + article.slug">[[article.title]]</a></h2>
+                        <p class="article-excerpt">[[article.excerpt]]</p>
+                        <div class="article-meta">
+                            <span v-if="article.author_name" class="author">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                                [[article.author_name]]
+                            </span>
+                            <span class="views">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                                [[article.view_count]]
+                            </span>
+                        </div>
                         <a :href="'/article/' + article.slug" class="btn btn-primary btn-small">阅读全文</a>
                     </article>
                 </div>
-                <div v-else class="no-articles"><p>暂无文章</p></div>
-            </div>
-
-            <div class="article-detail" v-else-if="currentPage === 'article'">
-                <h1>[[ article?.title ]]</h1>
-                <div class="article-meta" v-if="article">
-                    <span v-if="article.category_name">分类: [[ article.category_name ]]</span>
-                    <span v-if="article.author_name"> | 作者: [[ article.author_name ]]</span>
-                    <span> | [[ formatDate(article.published_at) ]]</span>
-                    <span> | 阅读: [[ article.view_count ]]</span>
+                <div v-else class="no-articles">
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        </svg>
+                        <p>暂无文章</p>
+                    </div>
                 </div>
-                <div class="article-content" v-html="article?.html_content" v-if="article"></div>
-                <a href="/" class="btn btn-secondary" style="margin-top: 20px">返回首页</a>
+
+                <!-- 分页 -->
+                <div class="pagination" v-if="totalPages > 1">
+                    <a v-if="currentPageNum > 1" href="#" @click.prevent="goToPage(currentPageNum - 1)">上一页</a>
+                    <span v-for="page in Math.min(5, totalPages)" :key="page"
+                          :class="{ active: page === currentPageNum }"
+                          @click.prevent="goToPage(page)">
+                        [[page]]
+                    </span>
+                    <span v-if="totalPages > 5">...</span>
+                    <a v-if="currentPageNum < totalPages" href="#" @click.prevent="goToPage(currentPageNum + 1)">下一页</a>
+                </div>
             </div>
 
+            <!-- 文章详情页 -->
+            <div class="article-detail-page" v-else-if="currentPage === 'article'">
+                <div v-if="article" class="article-detail">
+                    <div class="article-header">
+                        <span v-if="article.category_name" class="category-tag large">[[article.category_name]]</span>
+                        <h1>[[article.title]]</h1>
+                        <div class="article-meta-full">
+                            <span v-if="article.author_name" class="author">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                                [[article.author_name]]
+                            </span>
+                            <span class="date">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                                </svg>
+                                [[formatFullDate(article.published_at)]]
+                            </span>
+                            <span class="views">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                                [[article.view_count]] 次阅读
+                            </span>
+                        </div>
+                    </div>
+                    <div class="article-content" v-html="article.html_content"></div>
+                    <div class="article-actions">
+                        <a href="/" class="btn btn-secondary">返回首页</a>
+                    </div>
+                </div>
+                <div v-else class="loading">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <!-- 登录页 -->
             <div class="auth-page" v-else-if="currentPage === 'login'">
                 <div class="auth-card">
-                    <h1>登录</h1>
-                    <div v-if="error" class="error-message">[[ error ]]</div>
+                    <div class="auth-header">
+                        <h1>登录</h1>
+                        <p>欢迎回来</p>
+                    </div>
+                    <div v-if="error" class="error-message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        [[error]]
+                    </div>
+                    <div v-if="successMessage" class="success-message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                        [[successMessage]]
+                    </div>
                     <form @submit.prevent="handleLogin">
                         <div class="form-group">
                             <label>用户名或邮箱</label>
-                            <input type="text" v-model="loginForm.username" class="form-control" required>
+                            <input type="text" v-model="loginForm.username" class="form-control" placeholder="请输入用户名或邮箱" required>
                         </div>
                         <div class="form-group">
                             <label>密码</label>
-                            <input type="password" v-model="loginForm.password" class="form-control" required>
+                            <input type="password" v-model="loginForm.password" class="form-control" placeholder="请输入密码" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%">登录</button>
+                        <button type="submit" class="btn btn-primary btn-block" :disabled="submitting">
+                            <span v-if="submitting">登录中...</span>
+                            <span v-else>登录</span>
+                        </button>
                     </form>
                     <div class="auth-links">
                         <p>还没有账号？<a href="/register">立即注册</a></p>
@@ -80,24 +211,42 @@
                 </div>
             </div>
 
+            <!-- 注册页 -->
             <div class="auth-page" v-else-if="currentPage === 'register'">
                 <div class="auth-card">
-                    <h1>注册</h1>
-                    <div v-if="error" class="error-message">[[ error ]]</div>
+                    <div class="auth-header">
+                        <h1>注册</h1>
+                        <p>创建新账号</p>
+                    </div>
+                    <div v-if="error" class="error-message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        [[error]]
+                    </div>
+                    <div v-if="successMessage" class="success-message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                        [[successMessage]]
+                    </div>
                     <form @submit.prevent="handleRegister">
                         <div class="form-group">
                             <label>用户名</label>
-                            <input type="text" v-model="registerForm.username" class="form-control" required>
+                            <input type="text" v-model="registerForm.username" class="form-control" placeholder="请输入用户名" required>
                         </div>
                         <div class="form-group">
                             <label>邮箱</label>
-                            <input type="email" v-model="registerForm.email" class="form-control" required>
+                            <input type="email" v-model="registerForm.email" class="form-control" placeholder="请输入邮箱" required>
                         </div>
                         <div class="form-group">
                             <label>密码</label>
-                            <input type="password" v-model="registerForm.password" class="form-control" required>
+                            <input type="password" v-model="registerForm.password" class="form-control" placeholder="至少8位字符" required minlength="8">
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%">注册</button>
+                        <button type="submit" class="btn btn-primary btn-block" :disabled="submitting">
+                            <span v-if="submitting">注册中...</span>
+                            <span v-else>注册</span>
+                        </button>
                     </form>
                     <div class="auth-links">
                         <p>已有账号？<a href="/login">立即登录</a></p>
@@ -106,26 +255,320 @@
                 </div>
             </div>
 
+            <!-- 个人中心 -->
             <div class="profile-page" v-else-if="currentPage === 'profile'">
-                <div class="profile-card">
-                    <h1>个人中心</h1>
-                    <div class="user-info">
-                        <div class="info-item"><label>用户名</label><span>[[ user?.username ]]</span></div>
-                        <div class="info-item"><label>邮箱</label><span>[[ user?.email ]]</span></div>
-                        <div class="info-item"><label>角色</label><span>[[ user?.role === 'admin' ? '管理员' : '普通用户' ]]</span></div>
+                <div class="profile-card" v-if="user">
+                    <div class="profile-header">
+                        <div class="avatar">[[user.username.charAt(0).toUpperCase()]]</div>
+                        <h1>[[user.username]]</h1>
+                        <span class="role-badge" :class="user.role">[[user.role === 'admin' ? '管理员' : '普通用户']]</span>
                     </div>
-                    <button @click="logout" class="btn btn-danger" style="width: 100%; margin-top: 20px">退出登录</button>
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <label>用户名</label>
+                            <span>[[user.username]]</span>
+                        </div>
+                        <div class="info-item">
+                            <label>邮箱</label>
+                            <span>[[user.email]]</span>
+                        </div>
+                        <div class="info-item">
+                            <label>角色</label>
+                            <span>[[user.role === 'admin' ? '管理员' : '普通用户']]</span>
+                        </div>
+                        <div class="info-item">
+                            <label>注册时间</label>
+                            <span>[[formatFullDate(user.created_at)]]</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button @click="logout" class="btn btn-danger">退出登录</button>
+                        <a href="/" class="btn btn-secondary">返回首页</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 管理后台 -->
+            <div class="admin-page" v-else-if="currentPage === 'admin'">
+                <div class="admin-layout">
+                    <!-- 侧边栏 -->
+                    <aside class="admin-sidebar">
+                        <div class="sidebar-header">
+                            <h2>管理后台</h2>
+                        </div>
+                        <nav class="sidebar-nav">
+                            <a @click="adminSection = 'dashboard'" :class="{ active: adminSection === 'dashboard' }">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                                仪表盘
+                            </a>
+                            <a @click="adminSection = 'articles'" :class="{ active: adminSection === 'articles' }">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                                文章管理
+                            </a>
+                            <a @click="adminSection = 'categories'" :class="{ active: adminSection === 'categories' }">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                                分类管理
+                            </a>
+                            <a @click="adminSection = 'users'" :class="{ active: adminSection === 'users' }">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                                用户管理
+                            </a>
+                        </nav>
+                    </aside>
+
+                    <!-- 主内容区 -->
+                    <main class="admin-content">
+                        <!-- 仪表盘 -->
+                        <div v-if="adminSection === 'dashboard'" class="admin-section">
+                            <h1>仪表盘</h1>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon blue">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value">[[stats.total_articles]]</span>
+                                        <span class="stat-label">文章总数</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon green">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value">[[stats.published_articles]]</span>
+                                        <span class="stat-label">已发布</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon orange">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value">[[stats.draft_articles]]</span>
+                                        <span class="stat-label">草稿</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon purple">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-value">[[stats.total_users]]</span>
+                                        <span class="stat-label">用户数</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="recent-articles">
+                                <h2>最新文章</h2>
+                                <div class="article-list-simple" v-if="recentArticles.length > 0">
+                                    <div v-for="article in recentArticles" :key="article.id" class="article-item-simple">
+                                        <span class="article-title">[[article.title]]</span>
+                                        <span class="article-status" :class="article.status">[[article.status === 'published' ? '已发布' : '草稿']]</span>
+                                        <span class="article-date">[[formatFullDate(article.created_at)]]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 文章管理 -->
+                        <div v-else-if="adminSection === 'articles'" class="admin-section">
+                            <div class="section-header">
+                                <h1>文章管理</h1>
+                                <button @click="showEditor = true; editingArticle = null" class="btn btn-primary">新建文章</button>
+                            </div>
+                            <div class="article-table">
+                                <div class="table-header">
+                                    <span>标题</span>
+                                    <span>分类</span>
+                                    <span>状态</span>
+                                    <span>阅读</span>
+                                    <span>发布时间</span>
+                                    <span>操作</span>
+                                </div>
+                                <div v-if="allArticles.length > 0" class="table-body">
+                                    <div v-for="article in allArticles" :key="article.id" class="table-row">
+                                        <span class="title-cell">[[article.title]]</span>
+                                        <span>[[article.category_name || '-']]</span>
+                                        <span>
+                                            <span class="status-badge" :class="article.status">
+                                                [[article.status === 'published' ? '已发布' : '草稿']]
+                                            </span>
+                                        </span>
+                                        <span>[[article.view_count]]</span>
+                                        <span>[[formatShortDate(article.published_at)]]</span>
+                                        <span class="actions">
+                                            <button @click="editArticle(article)" class="btn-icon" title="编辑">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                            </button>
+                                            <button v-if="article.status === 'draft'" @click="publishArticle(article)" class="btn-icon" title="发布">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                            </button>
+                                            <button v-else @click="unpublishArticle(article)" class="btn-icon" title="下架">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                                            </button>
+                                            <button @click="deleteArticle(article)" class="btn-icon danger" title="删除">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-else class="table-empty">
+                                    <p>暂无文章</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 分类管理 -->
+                        <div v-else-if="adminSection === 'categories'" class="admin-section">
+                            <div class="section-header">
+                                <h1>分类管理</h1>
+                                <button @click="showCategoryForm = true" class="btn btn-primary">新建分类</button>
+                            </div>
+                            <div class="category-list">
+                                <div v-for="cat in categories" :key="cat.id" class="category-item">
+                                    <div class="category-info">
+                                        <span class="category-name">[[cat.name]]</span>
+                                        <span class="category-slug">[[cat.slug]]</span>
+                                    </div>
+                                    <div class="category-actions">
+                                        <button @click="editCategory(cat)" class="btn btn-small btn-secondary">编辑</button>
+                                        <button @click="deleteCategory(cat)" class="btn btn-small btn-danger">删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 用户管理 -->
+                        <div v-else-if="adminSection === 'users'" class="admin-section">
+                            <div class="section-header">
+                                <h1>用户管理</h1>
+                            </div>
+                            <div class="user-table">
+                                <div class="table-header">
+                                    <span>用户名</span>
+                                    <span>邮箱</span>
+                                    <span>角色</span>
+                                    <span>状态</span>
+                                    <span>注册时间</span>
+                                    <span>操作</span>
+                                </div>
+                                <div v-if="users.length > 0" class="table-body">
+                                    <div v-for="userItem in users" :key="userItem.id" class="table-row">
+                                        <span>[[userItem.username]]</span>
+                                        <span>[[userItem.email]]</span>
+                                        <span>
+                                            <span class="role-badge" :class="userItem.role">
+                                                [[userItem.role === 'admin' ? '管理员' : '普通用户']]
+                                            </span>
+                                        </span>
+                                        <span>
+                                            <span class="status-badge" :class="{ active: userItem.is_active }">
+                                                [[userItem.is_active ? '启用' : '禁用']]
+                                            </span>
+                                        </span>
+                                        <span>[[formatShortDate(userItem.created_at)]]</span>
+                                        <span class="actions">
+                                            <button v-if="userItem.id !== user.id" @click="toggleUser(userItem)" class="btn btn-small btn-secondary">
+                                                [[userItem.is_active ? '禁用' : '启用']]
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- 文章编辑器弹窗 -->
+    <div v-if="showEditor" class="modal-overlay" @click.self="showEditor = false">
+        <div class="modal-content editor-modal">
+            <div class="modal-header">
+                <h2>[[editingArticle ? '编辑文章' : '新建文章']]</h2>
+                <button @click="showEditor = false" class="modal-close">&times;</button>
+            </div>
+            <form @submit.prevent="saveArticle">
+                <div class="form-group">
+                    <label>标题</label>
+                    <input type="text" v-model="articleForm.title" class="form-control" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select v-model="articleForm.category_id" class="form-control">
+                            <option :value="null">无分类</option>
+                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">[[cat.name]]</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>状态</label>
+                        <select v-model="articleForm.status" class="form-control">
+                            <option value="draft">草稿</option>
+                            <option value="published">发布</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        内容 (Markdown)
+                        <button type="button" @click="showPreview = !showPreview" class="preview-toggle-btn">
+                            [[showPreview ? '隐藏预览' : '显示预览']]
+                        </button>
+                    </label>
+                    <div class="editor-with-preview" :class="{ 'preview-active': showPreview }">
+                        <textarea v-model="articleForm.content" class="form-control editor-textarea" rows="15" required placeholder="使用 Markdown 格式编写..."></textarea>
+                        <div v-if="showPreview" class="markdown-preview" v-html="previewHtml"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" @click="showEditor = false" class="btn btn-secondary">取消</button>
+                    <button type="submit" class="btn btn-primary" :disabled="submitting">
+                        [[submitting ? '保存中...' : '保存']]
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 分类表单弹窗 -->
+    <div v-if="showCategoryForm" class="modal-overlay" @click.self="showCategoryForm = false">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>[[editingCategory ? '编辑分类' : '新建分类']]</h2>
+                <button @click="showCategoryForm = false" class="modal-close">&times;</button>
+            </div>
+            <form @submit.prevent="saveCategory">
+                <div class="form-group">
+                    <label>分类名称</label>
+                    <input type="text" v-model="categoryForm.name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Slug</label>
+                    <input type="text" v-model="categoryForm.slug" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea v-model="categoryForm.description" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" @click="showCategoryForm = false" class="btn btn-secondary">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <footer class="footer">
         <p>&copy; 2026 news.docms.nz - 科技新闻分享平台</p>
     </footer>
 </div>
+{% endraw %}
 
 <script src="/static/lib/vue.min.js"></script>
+<script src="/static/lib/marked.min.js"></script>
 <script>
 // Simple auth state management
 const authState = Vue.reactive({
@@ -164,31 +607,77 @@ const api = {
     },
     post(url, data) {
         return this.request(url, { method: 'POST', body: JSON.stringify(data) });
+    },
+    put(url, data) {
+        return this.request(url, { method: 'PUT', body: JSON.stringify(data) });
+    },
+    delete(url) {
+        return this.request(url, { method: 'DELETE' });
     }
 };
 
 const app = Vue.createApp({
     setup() {
+        // 状态
         const currentPage = Vue.ref('home');
         const articles = Vue.ref([]);
         const article = Vue.ref(null);
+        const categories = Vue.ref([]);
+        const allArticles = Vue.ref([]);
+        const users = Vue.ref([]);
+        const recentArticles = Vue.ref([]);
+        const stats = Vue.ref({ total_users: 0, total_articles: 0, published_articles: 0, draft_articles: 0 });
         const totalPages = Vue.ref(1);
         const currentPageNum = Vue.ref(1);
+        const selectedCategory = Vue.ref(null);
         const error = Vue.ref('');
+        const successMessage = Vue.ref('');
+        const loading = Vue.ref(false);
+        const submitting = Vue.ref(false);
+        const mobileMenuOpen = Vue.ref(false);
+        const searchQuery = Vue.ref('');
+
+        // 表单数据
         const loginForm = Vue.ref({ username: '', password: '' });
         const registerForm = Vue.ref({ username: '', email: '', password: '' });
+        const articleForm = Vue.ref({ title: '', content: '', category_id: null, status: 'draft' });
+        const categoryForm = Vue.ref({ name: '', slug: '', description: '' });
 
+        // 编辑器状态
+        const showEditor = Vue.ref(false);
+        const showCategoryForm = Vue.ref(false);
+        const editingArticle = Vue.ref(null);
+        const editingCategory = Vue.ref(null);
+        const adminSection = Vue.ref('dashboard');
+        const showPreview = Vue.ref(false);
+
+        // Markdown 预览计算属性
+        const previewHtml = Vue.computed(() => {
+            if (!articleForm.value.content) return '<p class="preview-placeholder">预览将在此处显示...</p>';
+            return marked.parse(articleForm.value.content);
+        });
+
+        // 初始化
         Vue.onMounted(async () => {
             const token = localStorage.getItem('access_token');
             if (token) {
-                try { await api.get('/auth/me'); } catch (e) { authState.logout(); }
+                try {
+                    const r = await api.get('/auth/me');
+                    authState.setUser(r.data.user, token);
+                } catch (e) {
+                    authState.logout();
+                }
             }
+            await Promise.all([fetchCategories(), fetchStats()]);
             handleRouteChange();
             window.addEventListener('popstate', handleRouteChange);
         });
 
+        // 路由处理
         const handleRouteChange = () => {
             const path = window.location.pathname;
+            mobileMenuOpen.value = false;
+
             if (path === '/' || path.startsWith('/page/')) {
                 currentPage.value = 'home';
                 const page = path === '/' ? 1 : parseInt(path.split('/')[2]) || 1;
@@ -197,9 +686,20 @@ const app = Vue.createApp({
             } else if (path.startsWith('/article/')) {
                 currentPage.value = 'article';
                 fetchArticle(path.split('/')[2]);
-            } else if (path === '/login') { currentPage.value = 'login'; }
-            else if (path === '/register') { currentPage.value = 'register'; }
-            else if (path === '/profile') { currentPage.value = 'profile'; }
+            } else if (path === '/login') {
+                currentPage.value = 'login';
+            } else if (path === '/register') {
+                currentPage.value = 'register';
+            } else if (path === '/profile') {
+                currentPage.value = 'profile';
+            } else if (path === '/admin') {
+                if (!authState.isAdmin) {
+                    window.location.href = '/login';
+                    return;
+                }
+                currentPage.value = 'admin';
+                fetchAdminData();
+            }
         };
 
         const navigateTo = (path) => {
@@ -207,42 +707,108 @@ const app = Vue.createApp({
             handleRouteChange();
         };
 
+        // 数据获取
         const fetchArticles = async (page = 1) => {
             try {
-                const r = await api.get('/articles', { page, per_page: 10 });
+                loading.value = true;
+                const params = { page, per_page: 10 };
+                if (selectedCategory.value) params.category_id = selectedCategory.value;
+                if (searchQuery.value) params.search = searchQuery.value;
+                const r = await api.get('/articles', params);
                 articles.value = r.data.articles;
                 totalPages.value = r.data.pages;
-            } catch (e) { error.value = e.message; }
+            } catch (e) {
+                error.value = e.message;
+            } finally {
+                loading.value = false;
+            }
         };
 
         const fetchArticle = async (slug) => {
-            article.value = null;
             try {
+                loading.value = true;
                 const r = await api.get('/articles/' + slug);
                 article.value = r.data.article;
-            } catch (e) { error.value = e.message; }
+            } catch (e) {
+                error.value = e.message;
+            } finally {
+                loading.value = false;
+            }
         };
 
-        const goToPage = (page) => { navigateTo(page === 1 ? '/' : '/page/' + page); };
+        const fetchCategories = async () => {
+            try {
+                const r = await api.get('/categories');
+                categories.value = r.data.categories;
+            } catch (e) {}
+        };
+
+        const fetchStats = async () => {
+            try {
+                const r = await api.get('/admin/dashboard');
+                stats.value = r.data.stats;
+                recentArticles.value = r.data.recent_articles;
+            } catch (e) {}
+        };
+
+        const fetchAdminData = async () => {
+            try {
+                const [articlesRes, usersRes] = await Promise.all([
+                    api.get('/articles', { status: null, per_page: 100 }),
+                    api.get('/admin/users')
+                ]);
+                allArticles.value = articlesRes.data.articles;
+                users.value = usersRes.data.users;
+            } catch (e) {}
+        };
+
+        // 操作
+        const filterByCategory = (catId) => {
+            selectedCategory.value = catId;
+            fetchArticles(1);
+        };
+
+        const handleSearch = () => {
+            fetchArticles(1);
+        };
+
+        const clearSearch = () => {
+            searchQuery.value = '';
+            fetchArticles(1);
+        };
+
+        const goToPage = (page) => {
+            navigateTo(page === 1 ? '/' : '/page/' + page);
+        };
 
         const handleLogin = async () => {
             error.value = '';
+            submitting.value = true;
             try {
                 const r = await api.post('/auth/login', loginForm.value);
                 localStorage.setItem('refresh_token', r.data.refresh_token);
                 authState.setUser(r.data.user, r.data.access_token);
                 navigateTo('/');
-            } catch (e) { error.value = e.message; }
+            } catch (e) {
+                error.value = e.message;
+            } finally {
+                submitting.value = false;
+            }
         };
 
         const handleRegister = async () => {
             error.value = '';
+            submitting.value = true;
             try {
                 const r = await api.post('/auth/register', registerForm.value);
                 localStorage.setItem('refresh_token', r.data.refresh_token);
                 authState.setUser(r.data.user, r.data.access_token);
                 navigateTo('/');
-            } catch (e) { error.value = e.message; }
+            } catch (e) {
+                error.value = e.message;
+            } finally {
+                submitting.value = false;
+            }
         };
 
         const logout = async () => {
@@ -251,18 +817,140 @@ const app = Vue.createApp({
             navigateTo('/');
         };
 
+        const editArticle = (art) => {
+            editingArticle.value = art;
+            articleForm.value = {
+                title: art.title,
+                content: art.content,
+                category_id: art.category_id,
+                status: art.status
+            };
+            showEditor.value = true;
+        };
+
+        const saveArticle = async () => {
+            submitting.value = true;
+            try {
+                if (editingArticle.value) {
+                    await api.put('/articles/' + editingArticle.value.slug, articleForm.value);
+                } else {
+                    await api.post('/articles', articleForm.value);
+                }
+                showEditor.value = false;
+                editingArticle.value = null;
+                articleForm.value = { title: '', content: '', category_id: null, status: 'draft' };
+                await fetchAdminData();
+                await fetchStats();
+                await fetchArticles(currentPageNum.value);
+                successMessage.value = '保存成功';
+            } catch (e) {
+                error.value = e.message;
+            } finally {
+                submitting.value = false;
+            }
+        };
+
+        const publishArticle = async (art) => {
+            try {
+                await api.post('/articles/' + art.slug + '/publish');
+                await fetchAdminData();
+                await fetchStats();
+            } catch (e) {
+                error.value = e.message;
+            }
+        };
+
+        const unpublishArticle = async (art) => {
+            try {
+                await api.post('/articles/' + art.slug + '/unpublish');
+                await fetchAdminData();
+                await fetchStats();
+            } catch (e) {
+                error.value = e.message;
+            }
+        };
+
+        const deleteArticle = async (art) => {
+            if (!confirm('确定删除这篇文章吗？')) return;
+            try {
+                await api.delete('/articles/' + art.slug);
+                await fetchAdminData();
+                await fetchStats();
+                await fetchArticles(currentPageNum.value);
+            } catch (e) {
+                error.value = e.message;
+            }
+        };
+
+        const editCategory = (cat) => {
+            editingCategory.value = cat;
+            categoryForm.value = { ...cat };
+            showCategoryForm.value = true;
+        };
+
+        const saveCategory = async () => {
+            try {
+                if (editingCategory.value) {
+                    await api.put('/categories/' + editingCategory.value.id, categoryForm.value);
+                } else {
+                    await api.post('/categories', categoryForm.value);
+                }
+                showCategoryForm.value = false;
+                editingCategory.value = null;
+                categoryForm.value = { name: '', slug: '', description: '' };
+                await fetchCategories();
+            } catch (e) {
+                error.value = e.message;
+            }
+        };
+
+        const deleteCategory = async (cat) => {
+            if (!confirm('确定删除此分类吗？')) return;
+            try {
+                await api.delete('/categories/' + cat.id);
+                await fetchCategories();
+            } catch (e) {
+                error.value = e.message;
+            }
+        };
+
+        const toggleUser = async (userItem) => {
+            try {
+                await api.post('/admin/users/' + userItem.id + '/toggle-active');
+                await fetchAdminData();
+            } catch (e) {
+                error.value = e.message;
+            }
+        };
+
+        // 日期格式化
         const formatDate = (dateStr) => {
             if (!dateStr) return '';
             return new Date(dateStr).toLocaleDateString('zh-CN');
         };
 
+        const formatFullDate = (dateStr) => {
+            if (!dateStr) return '';
+            return new Date(dateStr).toLocaleString('zh-CN');
+        };
+
+        const formatShortDate = (dateStr) => {
+            if (!dateStr) return '-';
+            return new Date(dateStr).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+        };
+
         return {
+            currentPage, articles, article, categories, allArticles, users, recentArticles, stats,
+            totalPages, currentPageNum, selectedCategory, error, successMessage, loading, submitting,
+            mobileMenuOpen, searchQuery, loginForm, registerForm, articleForm, categoryForm,
+            showEditor, showCategoryForm, editingArticle, editingCategory, adminSection, showPreview, previewHtml,
             isLoggedIn: Vue.computed(() => authState.isLoggedIn),
             isAdmin: Vue.computed(() => authState.isAdmin),
             user: Vue.computed(() => authState.user),
-            currentPage, articles, article, totalPages, currentPageNum,
-            error, loginForm, registerForm, goToPage, handleLogin, handleRegister,
-            logout, formatDate
+            filterByCategory, handleSearch, clearSearch, goToPage, handleLogin, handleRegister, logout,
+            editArticle, saveArticle, publishArticle, unpublishArticle, deleteArticle,
+            editCategory, saveCategory, deleteCategory, toggleUser,
+            formatDate, formatFullDate, formatShortDate
         };
     }
 });
