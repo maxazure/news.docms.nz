@@ -111,8 +111,20 @@ def index():
                 with open(filepath, 'r', encoding='utf-8') as file:
                     content = file.read()
                     if f.endswith('.md'):
-                        title_match = re.search(r'^#\s+(.*)', content, re.MULTILINE)
-                        title = title_match.group(1) if title_match else f
+                        # 尝试从 YAML frontmatter 获取标题
+                        title = f
+                        if content.startswith('---'):
+                            frontmatter_end = content.find('---', 3)
+                            if frontmatter_end != -1:
+                                frontmatter = content[3:frontmatter_end]
+                                for line in frontmatter.split('\n'):
+                                    if line.startswith('title:'):
+                                        title = line.split(':', 1)[1].strip()
+                                        break
+                        else:
+                            # 回退到从 # 标题获取
+                            title_match = re.search(r'^#\s+(.*)', content, re.MULTILINE)
+                            title = title_match.group(1) if title_match else f
                     else:
                         title_match = re.search(r'<title>(.*?)</title>', content)
                         title = title_match.group(1) if title_match else f
@@ -161,14 +173,48 @@ def show_news(filename):
     if os.path.exists(md_path):
         with open(md_path, 'r', encoding='utf-8') as f:
             content = f.read()
-            html_content = markdown.markdown(content)
-            title_match = re.search(r'^#\s+(.*)', content, re.MULTILINE)
-            title = title_match.group(1) if title_match else filename
+
+            # 解析 YAML frontmatter
+            title = filename
+            category = None
+            date = None
+            excerpt = None
+            published_at = None
+
+            # 检查是否有 YAML frontmatter
+            if content.startswith('---'):
+                # 找到第二个 ---
+                frontmatter_end = content.find('---', 3)
+                if frontmatter_end != -1:
+                    frontmatter = content[3:frontmatter_end]
+                    content = content[frontmatter_end + 3:].strip()
+
+                    # 解析 frontmatter
+                    for line in frontmatter.split('\n'):
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            key = key.strip()
+                            value = value.strip()
+                            if key == 'title':
+                                title = value
+                            elif key == 'category':
+                                category = value
+                            elif key == 'date':
+                                date = value
+                                published_at = value
+
+            # 转换 Markdown 为 HTML
+            html_content = markdown.markdown(content, extensions=['fenced_code', 'tables'])
+
             return render_template('news.html', article={
                 'title': title,
                 'content': content,
                 'html_content': html_content,
-                'filename': filename
+                'filename': filename,
+                'category': category,
+                'date': date,
+                'published_at': published_at,
+                'excerpt': excerpt
             })
 
     elif os.path.exists(html_path):
