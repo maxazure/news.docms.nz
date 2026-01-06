@@ -210,7 +210,7 @@ def show_news(filename):
                 'html_content': html_content,
                 'filename': filename,
                 'category': category,
-                'published_at': date,
+                'date': date,
                 'excerpt': excerpt
             })
 
