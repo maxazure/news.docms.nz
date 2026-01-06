@@ -101,9 +101,9 @@
 
                 <!-- 搜索框 -->
                 <div class="search-box" style="position: relative;">
-                    <input type="text" v-model="searchQuery" @input="handleSearchInput"
+                    <input type="text" id="search-input" name="search" v-model="searchQuery" @input="handleSearchInput"
                            @keyup.enter="handleSearch" @focus="showSearchSuggestions = true"
-                           placeholder="搜索文章标题或内容..." class="search-input">
+                           placeholder="搜索文章标题或内容..." class="search-input" autocomplete="off">
                     <button @click="handleSearch" class="search-btn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -310,11 +310,11 @@
                     <form @submit.prevent="handleLogin">
                         <div class="form-group">
                             <label>用户名或邮箱</label>
-                            <input type="text" v-model="loginForm.username" class="form-control" placeholder="请输入用户名或邮箱" required>
+                            <input type="text" id="login-username" name="username" v-model="loginForm.username" class="form-control" placeholder="请输入用户名或邮箱" required autocomplete="username">
                         </div>
                         <div class="form-group">
                             <label>密码</label>
-                            <input type="password" v-model="loginForm.password" class="form-control" placeholder="请输入密码" required>
+                            <input type="password" id="login-password" name="password" v-model="loginForm.password" class="form-control" placeholder="请输入密码" required autocomplete="current-password">
                         </div>
                         <button type="submit" class="btn btn-primary btn-block" :disabled="submitting">
                             <span v-if="submitting">登录中...</span>
@@ -350,15 +350,15 @@
                     <form @submit.prevent="handleRegister">
                         <div class="form-group">
                             <label>用户名</label>
-                            <input type="text" v-model="registerForm.username" class="form-control" placeholder="请输入用户名" required>
+                            <input type="text" id="register-username" name="username" v-model="registerForm.username" class="form-control" placeholder="请输入用户名" required autocomplete="username">
                         </div>
                         <div class="form-group">
                             <label>邮箱</label>
-                            <input type="email" v-model="registerForm.email" class="form-control" placeholder="请输入邮箱" required>
+                            <input type="email" id="register-email" name="email" v-model="registerForm.email" class="form-control" placeholder="请输入邮箱" required autocomplete="email">
                         </div>
                         <div class="form-group">
                             <label>密码</label>
-                            <input type="password" v-model="registerForm.password" class="form-control" placeholder="至少8位字符" required minlength="8">
+                            <input type="password" id="register-password" name="password" v-model="registerForm.password" class="form-control" placeholder="至少8位字符" required minlength="8" autocomplete="new-password">
                         </div>
                         <button type="submit" class="btn btn-primary btn-block" :disabled="submitting">
                             <span v-if="submitting">注册中...</span>
@@ -1189,7 +1189,7 @@ const app = Vue.createApp({
         };
 
         // 设置滚动监听
-        Vue.onMounted(() => {
+        Vue.onMounted(async () => {
             const token = localStorage.getItem('access_token');
             if (token) {
                 try {
@@ -1199,9 +1199,8 @@ const app = Vue.createApp({
                     authState.logout();
                 }
             }
-            Promise.all([fetchCategories(), fetchStats()]).then(() => {
-                handleRouteChange();
-            });
+            await Promise.all([fetchCategories(), fetchStats()]);
+            handleRouteChange();
             window.addEventListener('popstate', handleRouteChange);
             window.addEventListener('scroll', updateReadingProgress);
             window.addEventListener('scroll', updateActiveToc);
