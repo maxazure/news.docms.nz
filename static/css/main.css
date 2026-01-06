@@ -1601,22 +1601,23 @@ select:focus {
     --accent-color: #FB923C;
     --accent-light: #FDBA74;
 
-    --text-color: #F1F5F9;
+    --text-primary: #F1F5F9;
     --text-secondary: #CBD5E1;
-    --text-light: #94A3B8;
+    --text-tertiary: #94A3B8;
     --text-muted: #64748B;
 
     --bg-color: #0F172A;
     --bg-secondary: #1E293B;
+    --bg-tertiary: #334155;
 
     --white: #1E293B;
     --border-color: #334155;
-    --border-light: #1E293B;
+    --border-strong: #475569;
   }
 
   body {
     background-color: var(--bg-color);
-    color: var(--text-color);
+    color: var(--text-primary);
   }
 
   .header,
