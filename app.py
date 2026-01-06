@@ -170,6 +170,9 @@ def show_news(filename):
     md_path = os.path.join(news_dir, f'{filename}.md')
     html_path = os.path.join(news_dir, f'{filename}.html')
 
+    app.logger.info(f'Looking for file: {filename}, md_path: {md_path}, html_path: {html_path}')
+    app.logger.info(f'MD exists: {os.path.exists(md_path)}, HTML exists: {os.path.exists(html_path)}')
+
     if os.path.exists(md_path):
         with open(md_path, 'r', encoding='utf-8') as f:
             content = f.read()
