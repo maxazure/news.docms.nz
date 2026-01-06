@@ -170,9 +170,6 @@ def show_news(filename):
     md_path = os.path.join(news_dir, f'{filename}.md')
     html_path = os.path.join(news_dir, f'{filename}.html')
 
-    app.logger.info(f'Looking for file: {filename}, md_path: {md_path}, html_path: {html_path}')
-    app.logger.info(f'MD exists: {os.path.exists(md_path)}, HTML exists: {os.path.exists(html_path)}')
-
     if os.path.exists(md_path):
         with open(md_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -182,7 +179,6 @@ def show_news(filename):
             category = None
             date = None
             excerpt = None
-            published_at = None
 
             # 检查是否有 YAML frontmatter
             if content.startswith('---'):
@@ -204,7 +200,6 @@ def show_news(filename):
                                 category = value
                             elif key == 'date':
                                 date = value
-                                published_at = value
 
             # 转换 Markdown 为 HTML
             html_content = markdown.markdown(content, extensions=['fenced_code', 'tables'])
@@ -215,8 +210,7 @@ def show_news(filename):
                 'html_content': html_content,
                 'filename': filename,
                 'category': category,
-                'date': date,
-                'published_at': published_at,
+                'published_at': date,
                 'excerpt': excerpt
             })
 
