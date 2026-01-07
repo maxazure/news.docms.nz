@@ -355,7 +355,7 @@
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
                                 </svg>
-                                [[calculateReadTime(article.content)]]
+                                <span class="read-time-text">[[calculateReadTime(article.content)]]</span>
                             </span>
                             <span class="views">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -410,6 +410,27 @@
                                 <span v-if="article.author_role">[[article.author_role]] · </span>
                                 <span>科技新闻撰稿人，专注于技术趋势和行业分析</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- 相关文章 -->
+                    <div class="related-articles" v-if="relatedArticles && relatedArticles.length > 0">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                                <path d="M12 8v8M8 12h8"/>
+                            </svg>
+                            相关文章
+                        </h3>
+                        <div class="related-list">
+                            <a v-for="related in relatedArticles.slice(0, 3)" :key="related.id" :href="'/article/' + related.slug" class="related-item">
+                                <div class="related-content">
+                                    <span class="related-title">[[related.title]]</span>
+                                    <span class="related-meta">
+                                        [[formatShortDate(related.published_at)]] · [[related.view_count]] 阅读
+                                    </span>
+                                </div>
+                            </a>
                         </div>
                     </div>
 

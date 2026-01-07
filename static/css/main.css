@@ -3066,6 +3066,68 @@ select:focus {
     line-height: 1.5;
 }
 
+/* ==================== 相关文章 ==================== */
+.related-articles {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-color);
+}
+
+.related-articles h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.related-articles h3 svg {
+    color: var(--primary-color);
+}
+
+.related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.related-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.related-item:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-soft);
+    transform: translateX(4px);
+}
+
+.related-title {
+    flex: 1;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.related-meta {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
 /* ==================== 新增：底部导航（移动端） ==================== */
 .mobile-bottom-nav {
     display: none;
@@ -3736,27 +3798,95 @@ select:focus {
 }
 
 [data-theme="dark"] {
+  /* 深色模式 - 增强可访问性对比度 (WCAG AAA) */
   --primary-color: #60A5FA;
   --primary-light: #93C5FD;
   --primary-dark: #3B82F6;
   --primary-soft: rgba(96, 165, 250, 0.15);
 
-  --text-primary: #F1F5F9;
-  --text-secondary: #CBD5E1;
+  /* 提高对比度的文本颜色 */
+  --text-primary: #F8FAFC;
+  --text-secondary: #E2E8F0;
   --text-muted: #94A3B8;
 
-  --bg-primary: #0F172A;
+  /* 深色背景 */
+  --bg-primary: #0B1120;
   --bg-secondary: #1E293B;
   --bg-tertiary: #334155;
-  --bg-hover: #334155;
+  --bg-hover: #475569;
 
+  /* 更清晰的边框颜色 */
   --border-color: #334155;
+  --border-strong: #475569;
 
   --card-bg: #1E293B;
 
-  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  /* 增强阴影 */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
+}
+
+/* 深色模式下的链接可访问性 */
+[data-theme="dark"] a {
+  color: #60A5FA;
+}
+
+[data-theme="dark"] a:hover {
+  color: #93C5FD;
+}
+
+/* 深色模式下的表单输入 */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: #1E293B;
+  border-color: #475569;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  border-color: #60A5FA;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+/* 深色模式下的按钮 */
+[data-theme="dark"] .btn-primary {
+  background: #3B82F6;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background: #60A5FA;
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: #334155;
+  color: #F8FAFC;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background: #475569;
+}
+
+/* 深色模式下的焦点轮廓 - 增强可访问性 */
+[data-theme="dark"] *:focus-visible {
+  outline: 2px solid #60A5FA;
+  outline-offset: 2px;
+}
+
+/* 深色模式下的代码块 */
+[data-theme="dark"] .article-content pre {
+  background: #0B1120;
+  border: 1px solid #334155;
+}
+
+[data-theme="dark"] .article-content code {
+  background: #1E293B;
+  color: #93C5FD;
 }
