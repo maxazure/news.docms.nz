@@ -179,6 +179,17 @@
                     </div>
                 </div>
 
+                <!-- 骨架屏加载状态 -->
+                <div class="article-list" v-if="loading && (!articles || articles.length === 0)">
+                    <div class="skeleton-card skeleton" v-for="n in 5" :key="n">
+                        <div class="skeleton-category skeleton"></div>
+                        <div class="skeleton-title skeleton"></div>
+                        <div class="skeleton-excerpt skeleton"></div>
+                        <div class="skeleton-excerpt skeleton"></div>
+                        <div class="skeleton-meta skeleton"></div>
+                    </div>
+                </div>
+
                 <!-- 文章列表 -->
                 <div class="article-list" v-if="articles && articles.length > 0">
                     <article class="article-card fade-in-section" v-for="(article, index) in articles" :key="article.id" :style="{ transitionDelay: (index % 10) * 50 + 'ms' }">
