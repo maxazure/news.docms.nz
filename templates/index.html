@@ -372,13 +372,23 @@
 
                     <!-- 文章目录 -->
                     <div class="table-of-contents" v-if="tocItems.length > 0">
-                        <h3>目录</h3>
+                        <h3>
+                            目录
+                            <span class="toc-back-top" @click="scrollToTop">回到顶部 ↑</span>
+                        </h3>
                         <ul class="toc-list">
                             <li v-for="item in tocItems" :key="item.id">
                                 <a :href="'#' + item.id" :class="{ 'toc-h3': item.level === 3, 'active': activeToc === item.id }"
                                    @click.prevent="scrollToHeading(item.id)">[[item.text]]</a>
                             </li>
                         </ul>
+                    </div>
+
+                    <!-- 阅读进度条 -->
+                    <div class="reading-progress-container" v-if="currentPage === 'article'">
+                        <div class="reading-progress-bar" :style="{ width: readingProgress + '%' }">
+                            <span class="reading-progress-text">[[Math.round(readingProgress)]]%</span>
+                        </div>
                     </div>
 
                     <div class="article-content" v-html="article.html_content" ref="articleContent"></div>
@@ -442,9 +452,23 @@
                                 返回首页
                             </a>
                         </div>
+                        <button @click="toggleBookmark(article.slug)" class="btn btn-secondary btn-small" :title="isBookmarked(article.slug) ? '取消收藏' : '收藏文章'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" :fill="isBookmarked(article.slug) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            [[isBookmarked(article.slug) ? '已收藏' : '收藏']]
+                        </button>
+                        <button @click="printArticle" class="btn btn-secondary btn-small" title="打印文章">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 6 2 18 2 18 9"/>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                <rect x="6" y="14" width="12" height="8"/>
+                            </svg>
+                            打印
+                        </button>
                         <button @click="scrollToTop" class="btn btn-secondary btn-small">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
-                            回到顶部
+                            顶部
                         </button>
                     </div>
                 </div>
@@ -1544,6 +1568,11 @@ const app = Vue.createApp({
             }
         };
 
+        // 打印文章
+        const printArticle = () => {
+            window.print();
+        };
+
         // 新闻通讯订阅
         const subscribeNewsletter = async () => {
             if (!newsletterEmail.value || !newsletterEmail.value.includes('@')) {
@@ -1729,7 +1758,7 @@ const app = Vue.createApp({
             scrollToTop, scrollToSearch, shareArticle, removeToast, addToast,
             getHistory, addToHistory, clearHistory,
             getBookmarks, isBookmarked, toggleBookmark, clearBookmarks, toggleTheme,
-            subscribeNewsletter
+            subscribeNewsletter, printArticle
         };
     }
 });
