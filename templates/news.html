@@ -864,7 +864,7 @@
                     <div class="related-content">
                         <span class="related-category">{{ related.category_name or '未分类' }}</span>
                         <h4>{{ related.title }}</h4>
-                        <span class="related-date">{{ related.date }}</span>
+                        <span class="related-date">{{ related.published_at[:10] if related.published_at else '' }}</span>
                     </div>
                 </a>
                 {% endfor %}

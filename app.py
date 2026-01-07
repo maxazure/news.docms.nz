@@ -182,7 +182,7 @@ def show_news(filename):
             ).order_by(Article.published_at.desc()).limit(3 - len(related_articles)).all()
             related_articles.extend(more_articles)
 
-        related_data = [a.to_list_dict() for a in related_articles[:3]] if related_articles else []
+        related_data = [a.to_dict() for a in related_articles[:3]] if related_articles else []
 
         return render_template('news.html',
                              article=article.to_detail_dict(),
@@ -234,7 +234,7 @@ def show_news(filename):
                     Article.slug != filename,
                     Article.status == 'published'
                 ).order_by(Article.published_at.desc()).limit(3).all()
-                related_data = [a.to_list_dict() for a in related_articles]
+                related_data = [a.to_dict() for a in related_articles]
 
             return render_template('news.html', article={
                 'title': title,
