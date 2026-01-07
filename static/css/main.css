@@ -5,6 +5,25 @@
  * 风格: Modern Minimalism with Glassmorphism
  */
 
+/* ==================== 滚动行为 - 流畅滚动体验 ==================== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 无障碍：减弱动画 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* 基础变量 - 现代新闻媒体配色 (21 palettes) */
 :root {
   /* ==================== 主色调 - 优雅紫蓝渐变 ==================== */
@@ -498,6 +517,13 @@ a:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   box-shadow: 0 2px 8px hsla(var(--primary-hue), 85%, 60%, 0.3);
+  transition: var(--transition-spring);
+  cursor: pointer;
+}
+
+.category-tag:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px hsla(var(--primary-hue), 85%, 60%, 0.4);
 }
 
 .article-date {
@@ -903,13 +929,15 @@ select.form-control {
   opacity: 0.7;
 }
 
-/* 文章内容排版 */
+/* 文章内容排版 - 优化阅读体验 (65-75字符最佳行长度) */
 .article-content {
   font-family: var(--font-serif);
   line-height: 1.85;
   font-size: 1.125rem;
   color: var(--text-primary);
   letter-spacing: 0.01em;
+  max-width: 70ch;
+  margin: 0 auto;
 }
 
 .article-content h2 {
