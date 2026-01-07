@@ -688,6 +688,17 @@ def unpublish_article(slug):
     return jsonify({'message': '下架成功', 'article': article.to_dict()})
 
 
+@app.route('/api/articles/popular', methods=['GET'])
+def get_popular_articles():
+    """获取热门文章（按阅读量排序）"""
+    limit = request.args.get('limit', 10, type=int)
+    articles = Article.query.filter_by(status='published')\
+        .order_by(Article.view_count.desc())\
+        .limit(limit)\
+        .all()
+    return jsonify({'articles': [a.to_dict() for a in articles]})
+
+
 # ==================== 分类 API ====================
 
 @app.route('/api/categories', methods=['GET'])

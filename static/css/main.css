@@ -1728,6 +1728,8 @@ select.form-control {
 
 .empty-state {
   color: var(--text-muted);
+  text-align: center;
+  padding: 48px 24px;
 }
 
 .empty-state svg {
@@ -1739,6 +1741,27 @@ select.form-control {
 .empty-state p {
   font-size: 1rem;
   margin-bottom: 16px;
+}
+
+/* 搜索无结果状态 */
+.no-articles .empty-state {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.no-articles .empty-state svg {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.no-articles .empty-state p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.no-articles .empty-state .btn {
+  margin-top: 8px;
 }
 
 /* 加载状态 */
@@ -1907,12 +1930,63 @@ img.loaded {
 .footer {
   background: var(--white);
   color: var(--text-muted);
-  text-align: center;
   padding: 24px;
   font-size: 0.875rem;
   margin: 0 16px 16px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto 16px;
+}
+
+.footer-section {
+  flex: 1;
+  min-width: 150px;
+}
+
+.footer-section h4 {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.footer-section p {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+.footer-section a {
+  display: block;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.footer-section a:hover {
+  color: var(--primary-color);
+}
+
+.footer-section span {
+  display: block;
+  padding: 4px 0;
+}
+
+.footer-copyright {
+  text-align: center;
+  color: var(--text-muted);
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  margin: 0;
 }
 
 .footer a {
@@ -2122,6 +2196,15 @@ img.loaded {
   .footer {
     margin: 0 8px 8px;
     padding: 20px 16px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .footer-section {
+    text-align: center;
   }
 }
 
@@ -3266,6 +3349,130 @@ select:focus {
 
     .bookmark-btn:hover,
     .bookmark-btn.active {
+        background: var(--warning-soft);
+    }
+}
+
+/* ==================== 热门文章 ==================== */
+.popular-articles {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-xs);
+}
+
+.popular-articles .section-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.popular-articles .section-header h3 svg {
+    color: var(--warning-color);
+}
+
+.popular-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.popular-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: var(--radius);
+    background: var(--bg-secondary);
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.popular-item:hover {
+    background: var(--warning-soft);
+    transform: translateX(4px);
+}
+
+.popular-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.popular-rank.rank-1 {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.popular-rank.rank-2 {
+    background: linear-gradient(135deg, #94A3B8 0%, #64748B 100%);
+    color: white;
+}
+
+.popular-rank.rank-3 {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+    color: white;
+}
+
+.popular-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.popular-title {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 4px;
+}
+
+.popular-item:hover .popular-title {
+    color: var(--primary-color);
+}
+
+.popular-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.popular-meta svg {
+    opacity: 0.7;
+}
+
+/* 深色模式下的热门文章 */
+@media (prefers-color-scheme: dark) {
+    .popular-articles {
+        background: #1E293B;
+        border-color: var(--border-color);
+    }
+
+    .popular-item {
+        background: var(--bg-secondary);
+    }
+
+    .popular-item:hover {
         background: var(--warning-soft);
     }
 }

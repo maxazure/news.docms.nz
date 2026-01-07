@@ -204,6 +204,34 @@
                     </div>
                 </div>
 
+                <!-- 热门文章 -->
+                <div class="popular-articles" v-if="popularArticles && popularArticles.length > 0">
+                    <div class="section-header">
+                        <h3>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 6l-9.5 9.5-5-5L1 18"/>
+                                <path d="M17 6h6v6"/>
+                            </svg>
+                            热门文章
+                        </h3>
+                    </div>
+                    <div class="popular-list">
+                        <a v-for="(article, index) in popularArticles" :key="article.id"
+                           :href="'/article/' + article.slug" class="popular-item">
+                            <span class="popular-rank" :class="'rank-' + (index + 1)">[[index + 1]]</span>
+                            <div class="popular-content">
+                                <span class="popular-title">[[article.title]]</span>
+                                <span class="popular-meta">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                                    </svg>
+                                    [[article.view_count]] 阅读
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- 分类筛选 -->
                 <div class="category-filter" v-if="categories.length > 0">
                     <button @click="filterByCategory(null)" :class="{ active: !selectedCategory }" class="category-btn">全部</button>
@@ -285,7 +313,9 @@
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
                         </svg>
-                        <p>暂无文章</p>
+                        <p v-if="searchQuery">没有找到与「[[searchQuery]]」相关的文章</p>
+                        <p v-else>暂无文章</p>
+                        <button v-if="searchQuery" @click="clearSearch" class="btn btn-secondary">清除搜索</button>
                     </div>
                 </div>
 
@@ -804,13 +834,26 @@
     </nav>
 
     <footer class="footer">
-        <p>&copy; 2026 news.docms.nz - 科技新闻分享平台</p>
-        <p class="keyboard-hints">
-            <kbd>/</kbd> 搜索
-            <kbd>Esc</kbd> 返回
-            <kbd>Home</kbd> 顶部
-            <kbd>End</kbd> 底部
-        </p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>关于我们</h4>
+                <p>科技新闻分享平台 - 提供最新的技术资讯、产品分析和行业趋势</p>
+            </div>
+            <div class="footer-section">
+                <h4>快速链接</h4>
+                <a href="/">首页</a>
+                <a href="/login">登录</a>
+                <a href="/register">注册</a>
+            </div>
+            <div class="footer-section">
+                <h4>快捷键</h4>
+                <span><kbd>/</kbd> 搜索</span>
+                <span><kbd>Esc</kbd> 返回</span>
+                <span><kbd>Home</kbd> 顶部</span>
+                <span><kbd>End</kbd> 底部</span>
+            </div>
+        </div>
+        <p class="footer-copyright">&copy; 2026 news.docms.nz - 科技新闻分享平台</p>
     </footer>
 </div>
 {% endraw %}
@@ -893,6 +936,7 @@ const app = Vue.createApp({
         const readingHistory = Vue.ref(getHistory());
         const bookmarks = Vue.ref(getBookmarks());
         const showSearchSuggestions = Vue.ref(false);
+        const popularArticles = Vue.ref([]);
 
         // 主题切换
         const isDarkMode = Vue.ref(false);
@@ -1118,6 +1162,15 @@ const app = Vue.createApp({
                 stats.value = r.data.stats;
                 recentArticles.value = r.data.recent_articles;
             } catch (e) {}
+        };
+
+        const fetchPopularArticles = async () => {
+            try {
+                const r = await api.get('/articles/popular');
+                popularArticles.value = r.data.articles || [];
+            } catch (e) {
+                console.error('获取热门文章失败:', e);
+            }
         };
 
         const fetchAdminData = async () => {
@@ -1429,7 +1482,7 @@ const app = Vue.createApp({
                     authState.logout();
                 }
             }
-            await Promise.all([fetchCategories(), fetchStats()]);
+            await Promise.all([fetchCategories(), fetchStats(), fetchPopularArticles()]);
             handleRouteChange();
             window.addEventListener('popstate', handleRouteChange);
             window.addEventListener('scroll', updateReadingProgress);
@@ -1565,7 +1618,7 @@ const app = Vue.createApp({
             mobileMenuOpen, searchQuery, loginForm, registerForm, articleForm, categoryForm,
             showEditor, showCategoryForm, editingArticle, editingCategory, adminSection, showPreview, previewHtml,
             // 新增状态
-            toasts, readingProgress, searchSuggestions, showSearchSuggestions, readingHistory, bookmarks, tocItems, activeToc, articleContent, isDarkMode,
+            toasts, readingProgress, searchSuggestions, showSearchSuggestions, readingHistory, bookmarks, tocItems, activeToc, articleContent, isDarkMode, popularArticles,
             // 计算属性
             isLoggedIn: Vue.computed(() => authState.isLoggedIn),
             isAdmin: Vue.computed(() => authState.isAdmin),
