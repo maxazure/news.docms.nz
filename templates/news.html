@@ -640,6 +640,49 @@
             }
         }
 
+        /* ==================== 面包屑导航 ==================== */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-color);
+        }
+
+        .breadcrumb a svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .breadcrumb-separator {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        .breadcrumb-current {
+            color: var(--text-primary);
+            font-weight: 500;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         /* 返回顶部按钮 */
         .back-to-top {
             position: fixed;
@@ -796,6 +839,22 @@
 
     <article class="article-container">
         <header class="article-header">
+            <!-- 面包屑导航 -->
+            <nav class="breadcrumb" aria-label="面包屑导航">
+                <a href="/">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    首页
+                </a>
+                <span class="breadcrumb-separator">/</span>
+                {% if article.get('category') %}
+                <a href="/?category={{ article.category }}">{{ article.category }}</a>
+                <span class="breadcrumb-separator">/</span>
+                {% endif %}
+                <span class="breadcrumb-current">{{ article.title }}</span>
+            </nav>
+
             <div class="article-meta">
                 {% if article.get('category') %}
                 <span class="category-tag">{{ article.category }}</span>

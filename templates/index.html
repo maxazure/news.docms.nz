@@ -107,6 +107,16 @@
                     <a href="/register">注册</a>
                 </template>
             </nav>
+            <!-- 主题切换按钮 -->
+            <button class="theme-toggle" @click="toggleTheme" :aria-label="isDarkMode ? '切换到浅色模式' : '切换到深色模式'" :title="isDarkMode ? '切换到浅色模式' : '切换到深色模式'">
+                <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
         </div>
     </header>
 
@@ -883,6 +893,40 @@ const app = Vue.createApp({
         const readingHistory = Vue.ref(getHistory());
         const bookmarks = Vue.ref(getBookmarks());
         const showSearchSuggestions = Vue.ref(false);
+
+        // 主题切换
+        const isDarkMode = Vue.ref(false);
+        const THEME_KEY = 'news_theme';
+        const SYSTEM_DARK = window.matchMedia('(prefers-color-scheme: dark)');
+
+        const initTheme = () => {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            if (savedTheme) {
+                isDarkMode.value = savedTheme === 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                isDarkMode.value = SYSTEM_DARK.matches;
+                document.documentElement.setAttribute('data-theme', SYSTEM_DARK.matches ? 'dark' : 'light');
+            }
+        };
+
+        const toggleTheme = () => {
+            isDarkMode.value = !isDarkMode.value;
+            const theme = isDarkMode.value ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem(THEME_KEY, theme);
+        };
+
+        // 监听系统主题变化
+        SYSTEM_DARK.addEventListener('change', (e) => {
+            if (!localStorage.getItem(THEME_KEY)) {
+                isDarkMode.value = e.matches;
+                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            }
+        });
+
+        // 初始化主题
+        initTheme();
         const tocItems = Vue.ref([]);
         const activeToc = Vue.ref('');
         const articleContent = Vue.ref(null);
@@ -1521,7 +1565,7 @@ const app = Vue.createApp({
             mobileMenuOpen, searchQuery, loginForm, registerForm, articleForm, categoryForm,
             showEditor, showCategoryForm, editingArticle, editingCategory, adminSection, showPreview, previewHtml,
             // 新增状态
-            toasts, readingProgress, searchSuggestions, showSearchSuggestions, readingHistory, bookmarks, tocItems, activeToc, articleContent,
+            toasts, readingProgress, searchSuggestions, showSearchSuggestions, readingHistory, bookmarks, tocItems, activeToc, articleContent, isDarkMode,
             // 计算属性
             isLoggedIn: Vue.computed(() => authState.isLoggedIn),
             isAdmin: Vue.computed(() => authState.isAdmin),
@@ -1535,7 +1579,7 @@ const app = Vue.createApp({
             calculateReadTime, handleSearchInput, selectSuggestion, scrollToHeading,
             scrollToTop, scrollToSearch, shareArticle, removeToast, addToast,
             getHistory, addToHistory, clearHistory,
-            getBookmarks, isBookmarked, toggleBookmark, clearBookmarks
+            getBookmarks, isBookmarked, toggleBookmark, clearBookmarks, toggleTheme
         };
     }
 });
