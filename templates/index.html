@@ -156,6 +156,21 @@
                     </div>
                 </div>
 
+                <!-- 阅读历史 -->
+                <div class="reading-history" v-if="readingHistory && readingHistory.length > 0">
+                    <div class="section-header">
+                        <h3>最近阅读</h3>
+                        <button @click="clearHistory" class="btn btn-small btn-secondary">清除</button>
+                    </div>
+                    <div class="history-list">
+                        <a v-for="item in readingHistory.slice(0, 5)" :key="item.slug"
+                           :href="'/article/' + item.slug" class="history-item">
+                            <span class="history-category" v-if="item.category">[[item.category]]</span>
+                            <span class="history-title">[[item.title]]</span>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- 分类筛选 -->
                 <div class="category-filter" v-if="categories.length > 0">
                     <button @click="filterByCategory(null)" :class="{ active: !selectedCategory }" class="category-btn">全部</button>
@@ -837,6 +852,7 @@ const app = Vue.createApp({
         const toasts = Vue.ref([]);
         const readingProgress = Vue.ref(0);
         const searchSuggestions = Vue.ref([]);
+        const readingHistory = Vue.ref(getHistory());
         const showSearchSuggestions = Vue.ref(false);
         const tocItems = Vue.ref([]);
         const activeToc = Vue.ref('');
@@ -918,11 +934,49 @@ const app = Vue.createApp({
                 loading.value = true;
                 const r = await api.get('/articles/' + slug);
                 article.value = r.data.article;
+
+                // 添加到阅读历史
+                addToHistory(r.data.article);
             } catch (e) {
                 error.value = e.message;
             } finally {
                 loading.value = false;
             }
+        };
+
+        // 阅读历史管理
+        const HISTORY_KEY = 'news_history';
+        const MAX_HISTORY = 10;
+
+        const getHistory = () => {
+            try {
+                return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            } catch {
+                return [];
+            }
+        };
+
+        const saveHistory = (history) => {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+        };
+
+        const addToHistory = (article) => {
+            if (!article || !article.slug) return;
+            const history = getHistory();
+            // 移除已存在的相同文章
+            const filtered = history.filter(h => h.slug !== article.slug);
+            // 添加到开头
+            filtered.unshift({
+                slug: article.slug,
+                title: article.title,
+                category: article.category_name,
+                readAt: new Date().toISOString()
+            });
+            saveHistory(filtered);
+        };
+
+        const clearHistory = () => {
+            saveHistory([]);
         };
 
         const fetchCategories = async () => {
@@ -1385,7 +1439,7 @@ const app = Vue.createApp({
             mobileMenuOpen, searchQuery, loginForm, registerForm, articleForm, categoryForm,
             showEditor, showCategoryForm, editingArticle, editingCategory, adminSection, showPreview, previewHtml,
             // 新增状态
-            toasts, readingProgress, searchSuggestions, showSearchSuggestions, tocItems, activeToc, articleContent,
+            toasts, readingProgress, searchSuggestions, showSearchSuggestions, readingHistory, tocItems, activeToc, articleContent,
             // 计算属性
             isLoggedIn: Vue.computed(() => authState.isLoggedIn),
             isAdmin: Vue.computed(() => authState.isAdmin),
@@ -1397,7 +1451,8 @@ const app = Vue.createApp({
             formatDate, formatFullDate, formatShortDate,
             // 新增方法
             calculateReadTime, handleSearchInput, selectSuggestion, scrollToHeading,
-            scrollToTop, scrollToSearch, shareArticle, removeToast, addToast
+            scrollToTop, scrollToSearch, shareArticle, removeToast, addToast,
+            getHistory, addToHistory, clearHistory
         };
     }
 });

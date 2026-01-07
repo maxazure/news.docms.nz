@@ -221,6 +221,79 @@
             background: var(--text-secondary);
         }
 
+        .share-btn.qrcode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* QR 码模态框 */
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal.active {
+            display: flex;
+        }
+
+        .qr-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+        }
+
+        .qr-modal h3 {
+            margin: 0 0 20px;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-code canvas {
+            border-radius: 8px;
+        }
+
+        .qr-url {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            word-break: break-all;
+        }
+
+        .qr-close {
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9375rem;
+        }
+
+        .qr-close:hover {
+            background: var(--primary-dark);
+        }
+
         /* 标题 - 业界标准排版 */
         h1.article-title {
             font-size: 2rem;
@@ -607,6 +680,15 @@
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                     </svg>
                 </button>
+                <button class="share-btn qrcode" onclick="showQRCode()" title="二维码分享">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                        <rect x="14" y="14" width="4" height="4"/>
+                        <rect x="17" y="17" width="4" height="4"/>
+                    </svg>
+                </button>
             </div>
         </header>
 
@@ -625,6 +707,18 @@
         </div>
     </article>
 
+    <!-- QR 码模态框 -->
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-modal-content">
+            <h3>扫码分享</h3>
+            <div class="qr-code" id="qrCodeContainer"></div>
+            <p class="qr-url" id="qrUrl"></p>
+            <button class="qr-close" onclick="closeQRCode()">关闭</button>
+        </div>
+    </div>
+
+    <!-- QRCode.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         // 阅读进度条
         (function() {
@@ -690,6 +784,72 @@
                     break;
             }
         }
+
+        // QR 码功能
+        function showQRCode() {
+            const modal = document.getElementById('qrModal');
+            const container = document.getElementById('qrCodeContainer');
+            const urlText = document.getElementById('qrUrl');
+
+            if (!modal || !container || !window.QRCode) {
+                alert('二维码加载中，请稍候...');
+                return;
+            }
+
+            const url = window.location.href;
+            urlText.textContent = url;
+
+            // 清空之前的二维码
+            container.innerHTML = '';
+
+            // 生成二维码
+            try {
+                QRCode.toCanvas(url, {
+                    width: 200,
+                    height: 200,
+                    margin: 2,
+                    color: {
+                        dark: '#1E293B',
+                        light: '#FFFFFF'
+                    }
+                }, function(error, canvas) {
+                    if (error) {
+                        console.error(error);
+                        container.innerHTML = '<span style="color: #999;">生成失败</span>';
+                        return;
+                    }
+                    canvas.style.borderRadius = '8px';
+                    container.appendChild(canvas);
+                });
+            } catch (e) {
+                container.innerHTML = '<span style="color: #999;">生成失败</span>';
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeQRCode() {
+            const modal = document.getElementById('qrModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('qrModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeQRCode();
+            }
+        });
+
+        // ESC 键关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeQRCode();
+            }
+        });
     </script>
 </body>
 </html>
