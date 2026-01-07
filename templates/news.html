@@ -107,6 +107,66 @@
             font-size: 0.875rem;
         }
 
+        .reading-time {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .reading-time svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* 分享按钮 */
+        .share-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .share-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .share-btn.wechat {
+            background: #07C160;
+        }
+
+        .share-btn.weibo {
+            background: #E6162D;
+        }
+
+        .share-btn.twitter {
+            background: #1DA1F2;
+        }
+
+        .share-btn.link {
+            background: var(--text-secondary);
+        }
+
         /* 标题 - 业界标准排版 */
         h1.article-title {
             font-size: 2rem;
@@ -463,11 +523,37 @@
                 {% if article.get('date') %}
                 <span class="article-date">{{ article.date }}</span>
                 {% endif %}
+                <span class="reading-time" id="readingTime">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span id="timeText">计算中...</span>
+                </span>
             </div>
             <h1 class="article-title">{{ article.title }}</h1>
             {% if article.get('excerpt') %}
             <p class="article-excerpt">{{ article.excerpt }}</p>
             {% endif %}
+
+            <!-- 分享按钮 -->
+            <div class="share-buttons">
+                <button class="share-btn wechat" onclick="shareTo('wechat')" title="分享到微信">
+                    <svg viewBox="0 0 24 24"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89l-.006-.033zm-2.634 2.588c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982z"/></svg>
+                </button>
+                <button class="share-btn weibo" onclick="shareTo('weibo')" title="分享到微博">
+                    <svg viewBox="0 0 24 24"><path d="M10.098 20c-4.27 0-8.598-1.85-8.598-5.77 0-1.64.65-3.14 1.74-4.31-.24-1.23.18-2.7 1.18-3.51 1.2-.97 3.04-.58 3.85.44.42-.13.87-.2 1.33-.2 2.24 0 4.16 1.58 4.66 3.74.77-.43 1.68-.67 2.64-.67 3.29 0 6 2.38 6 5.25 0 1.33-.62 2.54-1.6 3.44-.98.9-2.3 1.42-3.65 1.42-.34 0-.68-.03-1.01-.09-1.05 1.33-2.42 2.17-4.05 2.17-1.21 0-2.33-.38-3.27-1.04a5.067 5.067 0 0 1-2.2 2.01c1.31.4 2.72.63 4.22.63 4.27 0 8.11-1.85 8.11-5.33 0-1.94-.87-3.69-2.24-4.89.76-.47 1.37-1.18 1.7-2.01-.84.33-1.75.51-2.71.51-.67 0-1.31-.09-1.92-.25-1.4 1.61-3.25 2.65-5.29 2.65-1.93 0-3.67-.73-4.92-1.91-.69.39-1.49.61-2.33.61-.22 0-.43-.01-.64-.04-.09 1.21.23 2.41.88 3.31.66.9 1.62 1.46 2.72 1.56-.04-2.43 1.79-4.52 4.31-5.01.36-.07.73-.1 1.09-.1.67 0 1.32.09 1.93.25-.26-1.32.19-2.66.95-3.63 1.07-1.37 2.9-1.91 4.58-1.56.26.05.5.13.73.23-.04-1.73 1.18-3.3 2.82-3.79.34-.1.69-.15 1.04-.15 1.32 0 2.53.58 3.31 1.48.14-.04.28-.07.43-.07.64 0 1.24.23 1.69.64.46.41.71 1 .62 1.61-.09.61-.48 1.14-1.02 1.39.62-.18 1.17-.6 1.5-1.16.43-.71.46-1.57.05-2.32-.4-.75-1.13-1.25-1.96-1.32-.27-.02-.54-.02-.8 0C14.166 2.088 11.586 1 8.824 1c-.58 0-1.14.07-1.69.2-1.2.28-2.25.97-3 1.92-.5.64-.82 1.4-.91 2.21-.13 1.15.16 2.28.79 3.17.63.89 1.58 1.46 2.64 1.59.3.04.6.05.9.05 1.19 0 2.31-.42 3.21-1.15.9-.73 1.55-1.74 1.87-2.91.21-.77.24-1.58.09-2.36-.16-.78-.52-1.5-1.02-2.1-.5-.6-1.15-1.05-1.87-1.3-.72-.25-1.5-.33-2.25-.23-1.27.17-2.35.84-3.03 1.88-.49.75-.76 1.63-.76 2.53 0 .62.14 1.23.4 1.79.26.56.63 1.04 1.09 1.41.46.37 1 .64 1.59.79.59.15 1.21.18 1.81.08 1.2-.19 2.27-.79 3.04-1.68.77-.89 1.22-1.99 1.28-3.13.03-.58-.05-1.16-.22-1.7zm-4.79 2.72c-.48 0-.87-.4-.87-.9 0-.5.39-.91.87-.91.48 0 .87.41.87.91 0 .5-.39.9-.87.9zm4.8 0c-.48 0-.87-.4-.87-.9 0-.5.39-.91.87-.91.48 0 .87.41.87.91 0 .5-.39.9-.87.9z"/></svg>
+                </button>
+                <button class="share-btn twitter" onclick="shareTo('twitter')" title="分享到 Twitter">
+                    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </button>
+                <button class="share-btn link" onclick="shareTo('copy')" title="复制链接">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                </button>
+            </div>
         </header>
 
         <div class="article-content">
@@ -501,6 +587,55 @@
             window.addEventListener('scroll', updateProgress, { passive: true });
             updateProgress();
         })();
+
+        // 计算阅读时间 (中文字符约 300 字/分钟，英文约 200 字/分钟)
+        (function() {
+            const content = document.querySelector('.markdown-content');
+            const timeText = document.getElementById('timeText');
+            if (!content || !timeText) return;
+
+            const text = content.textContent || content.innerText;
+            // 中文字符按 0.4 字计算，英文按 1 字计算
+            const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+            const otherChars = text.length - chineseChars;
+            const words = Math.ceil(chineseChars * 0.4 + otherChars);
+            const minutes = Math.max(1, Math.ceil(words / 300));
+
+            timeText.textContent = minutes + ' 分钟阅读';
+        })();
+
+        // 分享功能
+        function shareTo(platform) {
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent(document.title);
+
+            switch(platform) {
+                case 'wechat':
+                    // 微信分享需要使用 JS-SDK，这里显示提示
+                    alert('请使用微信扫一扫页面右上角分享按钮分享');
+                    break;
+                case 'weibo':
+                    window.open(`https://service.weibo.com/share/share.php?url=${url}&title=${title}`, '_blank');
+                    break;
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank');
+                    break;
+                case 'copy':
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        alert('链接已复制到剪贴板');
+                    }).catch(() => {
+                        // 降级方案
+                        const textarea = document.createElement('textarea');
+                        textarea.value = window.location.href;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        alert('链接已复制到剪贴板');
+                    });
+                    break;
+            }
+        }
     </script>
 </body>
 </html>
