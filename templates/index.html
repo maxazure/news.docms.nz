@@ -385,6 +385,9 @@
 
                     <!-- 分享按钮 -->
                     <div class="share-buttons">
+                        <button class="share-btn" @click="shareArticle('wechat')" title="分享到微信">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 11c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm5 0c.83 0 1.5-.67 1.5-1.5S14.33 8 13.5 8 12 8.67 12 9.5s.67 1.5 1.5 1.5zm4.5 4c0 2.76-2.24 5-5 5H6c-3.31 0-6-2.69-6-6 0-2.05 1.05-3.87 2.62-4.78.45-.26.52-.72.52-1.13 0-.57-.45-1.09-1.04-1.09H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2v-4.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5V15h2v-4.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5V15h2v-3c0-1.1.9-2 2-2h3v5z"/></svg>
+                        </button>
                         <button class="share-btn" @click="shareArticle('weibo')" title="分享到微博">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 9.5c-.7 0-1.4.1-2 .3 1.4-1.4 2.1-3.2 1.9-4.8-2.1.1-4.5 1.2-5.9 3-1.1 1.4-1.6 3.1-1.5 4.9.1 1.8 1 3.4 2.5 4.5-.6-.3-1.2-.7-1.8-1.2-.9-.8-1.5-1.8-1.8-3-.3-1.2 0-2.4.7-3.4.6-.9 1.5-1.6 2.5-1.9.4-2.5 2.4-4.4 5-4.4h.7c1.2 0 2.4.5 3.2 1.4.6.7 1 1.6 1 2.5 0 .2 0 .5-.1.7.7-.1 1.4-.2 2-.2zM3.5 15c-.4 0-.8-.1-1.1-.4-.9-.8-1-2.2-.2-3.5.6-1 1.6-1.7 2.7-1.9 1.1-2.5 3.4-4.2 6-4.2 1.2 0 2.4.3 3.4 1 1.2.8 2 2 2.2 3.4.1.6 0 1.2-.2 1.8-.6-1.1-1.5-2-2.6-2.6-.2-.1-.4-.2-.6-.2-1.5.1-2.8 1-3.7 2.2-.8 1.1-1.1 2.4-.8 3.7.4 1.4 1.5 2.6 2.9 3.2-.4-.7-.5-1.5-.3-2.3.2-.8.8-1.5 1.6-1.9.8-.4 1.7-.4 2.5 0 .5.3.9.7 1.1 1.2.3-.5.4-1 .4-1.6 0-1.6-.9-3.1-2.3-3.9-.8-.5-1.8-.7-2.7-.6-1.4.1-2.7.9-3.4 2.1-.6 1-1 2.2-.9 3.4 0 .5.1 1 .4 1.4-1.6.4-2.7 1.7-2.9 3.3-.1.7 0 1.4.4 2z"/></svg>
                         </button>
@@ -394,6 +397,20 @@
                         <button class="share-btn" @click="shareArticle('link')" title="复制链接">
                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
                         </button>
+                    </div>
+
+                    <!-- 作者信息 -->
+                    <div class="author-bio" v-if="article && article.author_name">
+                        <div class="author-avatar">
+                            [[article.author_name.charAt(0).toUpperCase()]]
+                        </div>
+                        <div class="author-info">
+                            <div class="author-name">[[article.author_name]]</div>
+                            <div class="author-bio-text">
+                                <span v-if="article.author_role">[[article.author_role]] · </span>
+                                <span>科技新闻撰稿人，专注于技术趋势和行业分析</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 文章操作栏 -->
@@ -833,6 +850,34 @@
         </template>
     </nav>
 
+    <!-- 新闻通讯订阅 -->
+    <div class="newsletter-section" v-if="currentPage === 'home'">
+        <div class="newsletter-container">
+            <div class="newsletter-content">
+                <div class="newsletter-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                </div>
+                <div class="newsletter-text">
+                    <h3>订阅我们的新闻通讯</h3>
+                    <p>获取最新的技术资讯和行业动态，每周精选内容直接发送到您的邮箱</p>
+                </div>
+                <form @submit.prevent="subscribeNewsletter" class="newsletter-form">
+                    <input type="email" v-model="newsletterEmail" placeholder="输入您的邮箱地址" class="newsletter-input" required>
+                    <button type="submit" class="newsletter-btn" :disabled="newsletterSubmitting">
+                        <span v-if="newsletterSubmitting">订阅中...</span>
+                        <span v-else>订阅</span>
+                    </button>
+                </form>
+            </div>
+            <div v-if="newsletterMessage" class="newsletter-message" :class="newsletterMessage.type">
+                [[newsletterMessage.text]]
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -937,6 +982,11 @@ const app = Vue.createApp({
         const bookmarks = Vue.ref(getBookmarks());
         const showSearchSuggestions = Vue.ref(false);
         const popularArticles = Vue.ref([]);
+
+        // 新闻通讯订阅
+        const newsletterEmail = Vue.ref('');
+        const newsletterSubmitting = Vue.ref(false);
+        const newsletterMessage = Vue.ref(null);
 
         // 主题切换
         const isDarkMode = Vue.ref(false);
@@ -1462,6 +1512,8 @@ const app = Vue.createApp({
                 navigator.clipboard.writeText(url).then(() => {
                     addToast('链接已复制', '文章链接已复制到剪贴板', 'success');
                 });
+            } else if (platform === 'wechat') {
+                addToast('分享到微信', '请使用微信扫描页面上的二维码或复制链接分享', 'info');
             } else if (platform === 'weibo') {
                 const weiboUrl = `https://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
                 window.open(weiboUrl, '_blank');
@@ -1469,6 +1521,28 @@ const app = Vue.createApp({
                 const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
                 window.open(twitterUrl, '_blank');
             }
+        };
+
+        // 新闻通讯订阅
+        const subscribeNewsletter = async () => {
+            if (!newsletterEmail.value || !newsletterEmail.value.includes('@')) {
+                newsletterMessage.value = { type: 'error', text: '请输入有效的邮箱地址' };
+                return;
+            }
+            newsletterSubmitting.value = true;
+            newsletterMessage.value = null;
+
+            // 模拟订阅请求（实际项目中应调用后端 API）
+            setTimeout(() => {
+                newsletterSubmitting.value = false;
+                newsletterMessage.value = { type: 'success', text: '订阅成功！感谢您的关注' };
+                newsletterEmail.value = '';
+
+                // 4秒后清除消息
+                setTimeout(() => {
+                    newsletterMessage.value = null;
+                }, 4000);
+            }, 1000);
         };
 
         // 设置滚动监听
@@ -1619,6 +1693,7 @@ const app = Vue.createApp({
             showEditor, showCategoryForm, editingArticle, editingCategory, adminSection, showPreview, previewHtml,
             // 新增状态
             toasts, readingProgress, searchSuggestions, showSearchSuggestions, readingHistory, bookmarks, tocItems, activeToc, articleContent, isDarkMode, popularArticles,
+            newsletterEmail, newsletterSubmitting, newsletterMessage,
             // 计算属性
             isLoggedIn: Vue.computed(() => authState.isLoggedIn),
             isAdmin: Vue.computed(() => authState.isAdmin),
@@ -1632,7 +1707,8 @@ const app = Vue.createApp({
             calculateReadTime, handleSearchInput, selectSuggestion, scrollToHeading,
             scrollToTop, scrollToSearch, shareArticle, removeToast, addToast,
             getHistory, addToHistory, clearHistory,
-            getBookmarks, isBookmarked, toggleBookmark, clearBookmarks, toggleTheme
+            getBookmarks, isBookmarked, toggleBookmark, clearBookmarks, toggleTheme,
+            subscribeNewsletter
         };
     }
 });

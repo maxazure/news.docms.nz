@@ -1424,12 +1424,30 @@ select.form-control {
 /* 文章内容排版 - 优化阅读体验 (65-75字符最佳行长度) */
 .article-content {
   font-family: var(--font-serif);
-  line-height: 1.85;
+  line-height: 1.9;
   font-size: 1.125rem;
   color: var(--text-primary);
   letter-spacing: 0.01em;
-  max-width: 70ch;
+  max-width: 68ch;
   margin: 0 auto;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* 首字下沉（段落样式） */
+.article-content > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.5em;
+  line-height: 1;
+  padding-right: 0.1em;
+  padding-top: 0.1em;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.article-content p {
+  margin-bottom: 1.5em;
+  text-indent: 0;
 }
 
 .article-content h2 {
@@ -1486,12 +1504,28 @@ select.form-control {
 
 .article-content blockquote {
   border-left: 4px solid var(--primary-color);
-  margin: 24px 0;
-  padding: 16px 24px;
+  margin: 32px 0;
+  padding: 20px 28px;
   background: var(--bg-secondary);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
   color: var(--text-secondary);
   font-style: italic;
+  position: relative;
+}
+
+.article-content blockquote::before {
+  content: '"';
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  font-size: 4rem;
+  color: var(--primary-soft);
+  font-family: var(--font-serif);
+  line-height: 1;
+}
+
+.article-content blockquote p:last-child {
+  margin-bottom: 0;
 }
 
 .article-content code {
@@ -2024,6 +2058,121 @@ img.loaded {
   }
 }
 
+/* 新闻通讯订阅 */
+.newsletter-section {
+  margin: 0 16px 16px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.newsletter-container {
+  background: linear-gradient(135deg, var(--primary-soft) 0%, var(--accent-soft) 100%);
+  padding: 32px;
+}
+
+.newsletter-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.newsletter-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  background: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.newsletter-text {
+  flex: 1;
+}
+
+.newsletter-text h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.newsletter-text p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.newsletter-input {
+  width: 200px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  background: var(--white);
+  transition: all 0.2s;
+}
+
+.newsletter-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.newsletter-btn {
+  padding: 12px 24px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.newsletter-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.newsletter-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.newsletter-message {
+  max-width: 900px;
+  margin: 16px auto 0;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.newsletter-message.success {
+  background: var(--success-soft);
+  color: var(--success-color);
+}
+
+.newsletter-message.error {
+  background: var(--danger-soft);
+  color: var(--danger-color);
+}
+
 /* 响应式设计 */
 @media screen and (max-width: 768px) {
   /* 头部调整 */
@@ -2137,6 +2286,12 @@ img.loaded {
     gap: 16px;
   }
 
+  /* 作者信息 */
+  .author-bio {
+    flex-direction: column;
+    text-align: center;
+  }
+
   /* 认证页面 */
   .auth-page {
     margin: 24px auto;
@@ -2206,6 +2361,21 @@ img.loaded {
   .footer-section {
     text-align: center;
   }
+
+  /* 新闻通讯 */
+  .newsletter-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .newsletter-input {
+    width: 100%;
+  }
 }
 
 /* 更小屏幕适配 */
@@ -2241,6 +2411,23 @@ img.loaded {
 
   .footer {
     margin: 0 4px 4px;
+  }
+
+  .newsletter-container {
+    padding: 24px 16px;
+  }
+
+  .newsletter-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .newsletter-text h3 {
+    font-size: 1.125rem;
+  }
+
+  .newsletter-text p {
+    font-size: 0.875rem;
   }
 }
 
@@ -2833,6 +3020,50 @@ select:focus {
 .share-btn svg {
     width: 18px;
     height: 18px;
+}
+
+/* ==================== 新增：作者信息 ==================== */
+.author-bio {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding: 20px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.author-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.author-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.author-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.author-bio-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
 }
 
 /* ==================== 新增：底部导航（移动端） ==================== */
