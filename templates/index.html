@@ -5,18 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>科技新闻 - news.docms.nz</title>
     <meta name="description" content="科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告">
-    <meta name="keywords" content="科技新闻,技术资讯,产品分析,行业报告">
+    <meta name="keywords" content="科技新闻,技术资讯,产品分析,行业报告,AI,人工智能,互联网">
     <meta name="author" content="news.docms.nz">
-    <!-- Open Graph -->
-    <meta property="og:title" content="科技新闻 - news.docms.nz">
-    <meta property="og:description" content="科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告">
+    <meta name="robots" content="index, follow">
+    <meta name="canonical" href="https://news.docms.nz">
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://news.docms.nz">
     <meta property="og:locale" content="zh_CN">
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="科技新闻 - news.docms.nz">
-    <meta name="twitter:description" content="科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告">
+    <meta property="og:site_name" content="news.docms.nz">
+    <meta property="og:title" :content="currentPage === 'article' && article ? article.title + ' - news.docms.nz' : '科技新闻 - news.docms.nz'">
+    <meta property="og:description" :content="currentPage === 'article' && article ? (article.excerpt || article.title) : '科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告'">
+    <meta property="og:image" content="https://news.docms.nz/static/images/og-default.svg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@newsdocmsnz">
+    <meta name="twitter:title" :content="currentPage === 'article' && article ? article.title + ' - news.docms.nz' : '科技新闻 - news.docms.nz'">
+    <meta name="twitter:description" :content="currentPage === 'article' && article ? (article.excerpt || article.title) : '科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告'">
+    <meta name="twitter:image" content="https://news.docms.nz/static/images/og-default.svg">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json" id="schema-org">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "news.docms.nz",
+        "url": "https://news.docms.nz",
+        "description": "科技新闻平台 - 提供最新的技术资讯、产品分析和行业报告",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://news.docms.nz/?search={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
     <!-- Google Fonts: Newsreader (serif for headings) + Roboto (sans for body) - optimized for reading -->

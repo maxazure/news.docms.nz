@@ -4,6 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ article.title }}</title>
+    <meta name="description" content="{{ article.excerpt|default(article.title) }}">
+    <meta name="keywords" content="{{ article.category|default('科技新闻') }},{{ article.title }}">
+    <meta name="author" content="{{ article.author_name|default('news.docms.nz') }}">
+    <meta name="robots" content="index, follow">
+    <meta name="canonical" href="https://news.docms.nz/{{ article.slug }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://news.docms.nz/{{ article.slug }}">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="news.docms.nz">
+    <meta property="og:title" content="{{ article.title }}">
+    <meta property="og:description" content="{{ article.excerpt|default(article.title) }}">
+    <meta property="og:image" content="https://news.docms.nz/static/images/og-default.svg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@newsdocmsnz">
+    <meta name="twitter:title" content="{{ article.title }}">
+    <meta name="twitter:description" content="{{ article.excerpt|default(article.title) }}">
+    <meta name="twitter:image" content="https://news.docms.nz/static/images/og-default.svg">
+
+    <!-- Article Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": "{{ article.title }}",
+        "description": "{{ article.excerpt|default(article.title) }}",
+        "author": {
+            "@type": "Organization",
+            "name": "{{ article.author_name|default('news.docms.nz') }}",
+            "url": "https://news.docms.nz"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "news.docms.nz",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://news.docms.nz/static/images/og-default.svg"
+            }
+        },
+        "datePublished": "{{ article.published_at }}",
+        "dateModified": "{{ article.updated_at|default(article.published_at) }}",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://news.docms.nz/{{ article.slug }}"
+        },
+        "inLanguage": "zh-CN",
+        "articleSection": "{{ article.category|default('科技新闻') }}",
+        "wordCount": {{ article.content|length|default(0) }}
+    }
+    </script>
+
     <!-- Google Fonts: Newsreader (serif) + Roboto (sans) for reading optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
