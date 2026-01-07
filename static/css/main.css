@@ -488,14 +488,31 @@ a:focus-visible {
   transition: var(--transition);
 }
 
-.article-card:hover {
+.article-card:hover,
+.article-card:focus-within {
   box-shadow: var(--shadow-lg);
   border-color: var(--primary-light);
   transform: translateY(-4px);
 }
 
-.article-card:hover::before {
+.article-card:hover::before,
+.article-card:focus-within::before {
   opacity: 1;
+}
+
+/* 焦点状态 - 无障碍 */
+.article-card:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.article-card:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.article-card:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .article-card-header {
@@ -564,7 +581,8 @@ a:focus-visible {
   display: inline;
 }
 
-.article-card:hover h2 a {
+.article-card:hover h2 a,
+.article-card h2 a:focus {
   background-size: 100% 2px;
   color: var(--primary-color);
 }
@@ -1306,6 +1324,33 @@ select.form-control {
 
 .footer a:hover {
   color: var(--primary-color);
+}
+
+/* 键盘快捷键提示 */
+.keyboard-hints {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.keyboard-hints kbd {
+  display: inline-block;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 640px) {
+  .keyboard-hints {
+    display: none;
+  }
 }
 
 /* 响应式设计 */

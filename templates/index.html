@@ -712,6 +712,12 @@
 
     <footer class="footer">
         <p>&copy; 2026 news.docms.nz - 科技新闻分享平台</p>
+        <p class="keyboard-hints">
+            <kbd>/</kbd> 搜索
+            <kbd>Esc</kbd> 返回
+            <kbd>Home</kbd> 顶部
+            <kbd>End</kbd> 底部
+        </p>
     </footer>
 </div>
 {% endraw %}
@@ -1220,6 +1226,40 @@ const app = Vue.createApp({
             if (currentPage.value === 'article') {
                 setTimeout(generateToc, 500);
             }
+
+            // 键盘导航
+            document.addEventListener('keydown', (e) => {
+                // 避免在输入框中触发
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                    return;
+                }
+
+                // Escape: 返回首页
+                if (e.key === 'Escape') {
+                    if (currentPage.value === 'article') {
+                        navigateTo('/');
+                    }
+                }
+
+                // /: 聚焦搜索框
+                if (e.key === '/' && !searchQuery.value) {
+                    e.preventDefault();
+                    const searchInput = document.querySelector('.search-box input');
+                    if (searchInput) searchInput.focus();
+                }
+
+                // Home: 返回顶部
+                if (e.key === 'Home') {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+                // End: 滚动到底部
+                if (e.key === 'End') {
+                    e.preventDefault();
+                    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+                }
+            });
         });
 
         // 日期格式化
