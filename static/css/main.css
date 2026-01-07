@@ -137,6 +137,8 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 触摸优化：消除 300ms 点击延迟 */
+  touch-action: manipulation;
 }
 
 body {
@@ -175,6 +177,101 @@ a:focus-visible {
 ::selection {
   background-color: var(--primary-color);
   color: var(--white);
+}
+
+/* ==================== 无障碍改进 ==================== */
+
+/* 跳转到内容链接（键盘导航） */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 10000;
+  padding: 12px 24px;
+  background: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 16px;
+  outline: 2px solid var(--primary-dark);
+  outline-offset: 2px;
+}
+
+/* 改进触摸目标尺寸（最小 44x44px） */
+button,
+input[type="submit"],
+input[type="button"],
+.btn,
+.category-btn,
+.tag,
+.pagination a,
+.nav a {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* 小按钮例外：保持合理大小但增加触摸区域 */
+.btn-small {
+  min-height: 36px;
+  padding: 8px 16px;
+}
+
+.bookmark-btn {
+  min-height: 40px;
+  min-width: 40px;
+}
+
+/* 触摸目标间距（最小 8px） */
+.article-card,
+.category-btn,
+.tag,
+.pagination a,
+.nav a {
+  margin: 2px;
+}
+
+/* 焦点可见性增强 */
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* 降低动画设置 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+    touch-action: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  :root {
+    --primary-color: #0066CC;
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --border-color: #000000;
+  }
+
+  .article-card,
+  .header,
+  .footer {
+    border-width: 2px;
+    border-style: solid;
+  }
 }
 
 /* 布局 */

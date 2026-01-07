@@ -56,6 +56,9 @@
 </head>
 <body>
 {% raw %}
+<!-- 跳转到内容链接（键盘导航） -->
+<a href="#main-content" class="skip-link">跳转到主要内容</a>
+
 <div id="app">
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-overlay">
@@ -107,7 +110,7 @@
         </div>
     </header>
 
-    <main class="main">
+    <main class="main" id="main-content" role="main" aria-label="主要内容区域">
         <div class="container">
             <!-- 首页 - 文章列表 -->
             <div class="home-page" v-if="currentPage === 'home'">
