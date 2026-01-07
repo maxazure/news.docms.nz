@@ -117,8 +117,82 @@
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                 </svg>
             </button>
+            <!-- 键盘快捷键按钮 -->
+            <button class="shortcuts-toggle" @click="showShortcuts = true" aria-label="键盘快捷键" title="键盘快捷键 (?)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h8M6 16h.01M18 16h.01M10 16h4"/>
+                </svg>
+            </button>
         </div>
     </header>
+
+    <!-- 跳转到主要内容链接（无障碍） -->
+    <a href="#main-content" class="skip-link" @click.prevent="scrollToMainContent">跳转到主要内容</a>
+
+    <!-- 键盘快捷键弹窗 -->
+    <div class="modal-overlay" v-if="showShortcuts" @click.self="showShortcuts = false">
+        <div class="shortcuts-modal">
+            <div class="modal-header">
+                <h2>键盘快捷键</h2>
+                <button class="modal-close" @click="showShortcuts = false" aria-label="关闭">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="shortcuts-content">
+                <div class="shortcut-group">
+                    <h3>导航</h3>
+                    <div class="shortcut-item">
+                        <kbd>/</kbd>
+                        <span>聚焦搜索框</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd>
+                        <span>返回首页 / 关闭弹窗</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Home</kbd>
+                        <span>滚动到顶部</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>End</kbd>
+                        <span>滚动到底部</span>
+                    </div>
+                </div>
+                <div class="shortcut-group">
+                    <h3>文章</h3>
+                    <div class="shortcut-item">
+                        <kbd>b</kbd>
+                        <span>收藏/取消收藏文章</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>p</kbd>
+                        <span>打印文章</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>?</kbd>
+                        <span>显示此帮助</span>
+                    </div>
+                </div>
+                <div class="shortcut-group">
+                    <h3>翻页</h3>
+                    <div class="shortcut-item">
+                        <kbd>j</kbd>
+                        <span>下一篇文章</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>k</kbd>
+                        <span>上一篇文章</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <p>按 <kbd>?</kbd> 随时打开此帮助</p>
+            </div>
+        </div>
+    </div>
 
     <main class="main" id="main-content" role="main" aria-label="主要内容区域">
         <div class="container">
@@ -1028,6 +1102,9 @@ const app = Vue.createApp({
         const showSearchSuggestions = Vue.ref(false);
         const popularArticles = Vue.ref([]);
 
+        // 键盘快捷键弹窗
+        const showShortcuts = Vue.ref(false);
+
         // 新闻通讯订阅
         const newsletterEmail = Vue.ref('');
         const newsletterSubmitting = Vue.ref(false);
@@ -1538,6 +1615,15 @@ const app = Vue.createApp({
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
+        // 跳转到主要内容
+        const scrollToMainContent = () => {
+            const main = document.getElementById('main-content');
+            if (main) {
+                main.scrollIntoView({ behavior: 'smooth' });
+                main.focus();
+            }
+        };
+
         // 滚动到搜索框
         const scrollToSearch = () => {
             const searchBox = document.querySelector('.search-box');
@@ -1616,6 +1702,34 @@ const app = Vue.createApp({
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.search-box')) {
                     showSearchSuggestions.value = false;
+                }
+            });
+
+            // 键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                // ? 打开快捷键帮助
+                if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+                    e.preventDefault();
+                    showShortcuts.value = !showShortcuts.value;
+                }
+                // Esc 关闭弹窗或返回首页
+                if (e.key === 'Escape') {
+                    if (showShortcuts.value) {
+                        showShortcuts.value = false;
+                    } else if (currentPage.value !== 'home') {
+                        currentPage.value = 'home';
+                        handleRouteChange();
+                    }
+                }
+                // b 收藏/取消收藏
+                if (e.key === 'b' && currentPage.value === 'article' && article.value) {
+                    e.preventDefault();
+                    toggleBookmark(article.value.slug);
+                }
+                // p 打印
+                if (e.key === 'p' && currentPage.value === 'article') {
+                    e.preventDefault();
+                    printArticle();
                 }
             });
 
@@ -1743,7 +1857,7 @@ const app = Vue.createApp({
             showEditor, showCategoryForm, editingArticle, editingCategory, adminSection, showPreview, previewHtml,
             // 新增状态
             toasts, readingProgress, searchSuggestions, showSearchSuggestions, readingHistory, bookmarks, tocItems, activeToc, articleContent, isDarkMode, popularArticles,
-            newsletterEmail, newsletterSubmitting, newsletterMessage,
+            newsletterEmail, newsletterSubmitting, newsletterMessage, showShortcuts,
             // 计算属性
             isLoggedIn: Vue.computed(() => authState.isLoggedIn),
             isAdmin: Vue.computed(() => authState.isAdmin),
@@ -1755,7 +1869,7 @@ const app = Vue.createApp({
             formatDate, formatFullDate, formatShortDate,
             // 新增方法
             calculateReadTime, handleSearchInput, selectSuggestion, scrollToHeading,
-            scrollToTop, scrollToSearch, shareArticle, removeToast, addToast,
+            scrollToTop, scrollToSearch, scrollToMainContent, shareArticle, removeToast, addToast,
             getHistory, addToHistory, clearHistory,
             getBookmarks, isBookmarked, toggleBookmark, clearBookmarks, toggleTheme,
             subscribeNewsletter, printArticle
