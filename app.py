@@ -163,7 +163,30 @@ def show_news(filename):
         # 增加阅读量
         article.view_count += 1
         db.session.commit()
-        return render_template('news.html', article=article.to_detail_dict())
+
+        # 获取相关文章（同一分类或最新的3篇文章）
+        related_articles = []
+        if article.category:
+            related_articles = Article.query.filter(
+                Article.slug != filename,
+                Article.status == 'published',
+                Article.category == article.category
+            ).order_by(Article.published_at.desc()).limit(3).all()
+
+        # 如果同一分类文章不足3篇，补充最新的其他文章
+        if len(related_articles) < 3:
+            existing_slugs = [a.slug for a in related_articles] + [filename]
+            more_articles = Article.query.filter(
+                ~Article.slug.in_(existing_slugs),
+                Article.status == 'published'
+            ).order_by(Article.published_at.desc()).limit(3 - len(related_articles)).all()
+            related_articles.extend(more_articles)
+
+        related_data = [a.to_list_dict() for a in related_articles[:3]] if related_articles else []
+
+        return render_template('news.html',
+                             article=article.to_detail_dict(),
+                             related_articles=related_data)
 
     # 兼容旧版：从文件读取
     news_dir = os.getenv('NEWS_DIR', 'news')
@@ -204,6 +227,15 @@ def show_news(filename):
             # 转换 Markdown 为 HTML
             html_content = markdown.markdown(content, extensions=['fenced_code', 'tables'])
 
+            # 获取相关文章（从数据库）
+            related_data = []
+            if Article.query.count() > 0:
+                related_articles = Article.query.filter(
+                    Article.slug != filename,
+                    Article.status == 'published'
+                ).order_by(Article.published_at.desc()).limit(3).all()
+                related_data = [a.to_list_dict() for a in related_articles]
+
             return render_template('news.html', article={
                 'title': title,
                 'content': content,
@@ -212,7 +244,7 @@ def show_news(filename):
                 'category': category,
                 'date': date,
                 'excerpt': excerpt
-            })
+            }, related_articles=related_data)
 
     elif os.path.exists(html_path):
         return send_from_directory(news_dir, f'{filename}.html')
