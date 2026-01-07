@@ -415,6 +415,15 @@ a:focus-visible {
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .skeleton {
   background: linear-gradient(
     90deg,
@@ -427,12 +436,33 @@ a:focus-visible {
   border-radius: var(--radius);
 }
 
+/* 脉冲骨架屏 - 更柔和的效果 */
+.skeleton-pulse {
+  animation: pulse 2s ease-in-out infinite;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
+}
+
 /* 骨架屏文章卡片 */
 .skeleton-card {
   background: var(--white);
   border-radius: var(--radius-lg);
   padding: 24px 28px;
   border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 1.5s infinite;
 }
 
 .skeleton-card .skeleton-category {
@@ -484,6 +514,146 @@ a:focus-visible {
   gap: 6px;
   width: 80px;
   height: 20px;
+}
+
+/* 骨架屏头像 */
+.skeleton-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+/* 骨架屏按钮 */
+.skeleton-btn {
+  height: 40px;
+  width: 100px;
+  border-radius: var(--radius);
+}
+
+/* 骨架屏表格单元格 */
+.skeleton-cell {
+  height: 20px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* 骨架屏卡片网格 */
+.skeleton-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.skeleton-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.skeleton-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.skeleton-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1200px) {
+  .skeleton-grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .skeleton-grid-3,
+  .skeleton-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .skeleton-grid-2,
+  .skeleton-grid-3,
+  .skeleton-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 骨架屏列表 */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+}
+
+.skeleton-list-item .skeleton-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-list-item .skeleton-text {
+  flex: 1;
+  height: 16px;
+}
+
+/* 骨架屏横幅/广告位 */
+.skeleton-banner {
+  width: 100%;
+  height: 200px;
+  border-radius: var(--radius-lg);
+}
+
+/* 骨架屏评论 */
+.skeleton-comment {
+  display: flex;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.skeleton-comment .skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.skeleton-comment-content {
+  flex: 1;
+}
+
+.skeleton-comment-content .skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.skeleton-comment-content .skeleton-text:first-child {
+  width: 60%;
+  height: 18px;
+}
+
+/* 减弱动画模式下的骨架屏 */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--bg-tertiary);
+  }
+
+  .skeleton::after,
+  .skeleton-card::after {
+    display: none;
+  }
+
+  .skeleton-pulse {
+    animation: none;
+    opacity: 0.7;
+  }
 }
 
 /* 骨架屏按钮 */
@@ -2659,11 +2829,58 @@ img.loaded {
 /* 图片懒加载 */
 img[loading="lazy"] {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease-in-out;
 }
 
 img[loading="lazy"].loaded {
   opacity: 1;
+}
+
+/* 懒加载图片占位符 */
+.lazy-image {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  background: var(--bg-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.lazy-image.loaded {
+  opacity: 1;
+}
+
+.lazy-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: translateX(-100%);
+  animation: lazyShine 1.5s infinite;
+}
+
+.lazy-image.loaded::after {
+  display: none;
+}
+
+@keyframes lazyShine {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* data-src 图片懒加载 */
+img[data-src] {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  background: var(--bg-secondary);
+}
+
+img[data-src].loaded {
+  opacity: 1;
+  background: transparent;
 }
 
 /* 平滑滚动 */

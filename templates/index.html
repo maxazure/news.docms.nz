@@ -1699,6 +1699,50 @@ const app = Vue.createApp({
             }, 1000);
         };
 
+        // 图片懒加载初始化
+        const initLazyImages = () => {
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            if (img.dataset.src) {
+                                img.src = img.dataset.src;
+                                img.classList.add('loaded');
+                                img.removeAttribute('data-src');
+                                img.removeAttribute('loading');
+                            }
+                            if (img.dataset.bg) {
+                                img.style.backgroundImage = `url(${img.dataset.bg})`;
+                                img.removeAttribute('data-bg');
+                                img.classList.add('loaded');
+                            }
+                            imageObserver.unobserve(img);
+                        }
+                    });
+                }, {
+                    rootMargin: '100px 0px',
+                    threshold: 0.01
+                });
+
+                document.querySelectorAll('img[data-src], img[data-bg], .lazy-image').forEach(img => {
+                    imageObserver.observe(img);
+                });
+            } else {
+                // 降级处理：立即加载所有图片
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    img.src = img.dataset.src;
+                    img.classList.add('loaded');
+                    img.removeAttribute('data-src');
+                });
+                document.querySelectorAll('img[data-bg]').forEach(img => {
+                    img.style.backgroundImage = `url(${img.dataset.bg})`;
+                    img.classList.add('loaded');
+                    img.removeAttribute('data-bg');
+                });
+            }
+        };
+
         // 设置滚动监听
         Vue.onMounted(async () => {
             const token = localStorage.getItem('access_token');
@@ -1715,6 +1759,9 @@ const app = Vue.createApp({
             window.addEventListener('popstate', handleRouteChange);
             window.addEventListener('scroll', updateReadingProgress);
             window.addEventListener('scroll', updateActiveToc);
+
+            // 初始化图片懒加载
+            initLazyImages();
 
             // 点击外部关闭搜索建议
             document.addEventListener('click', (e) => {
@@ -1890,7 +1937,7 @@ const app = Vue.createApp({
             scrollToTop, scrollToSearch, scrollToMainContent, shareArticle, removeToast, addToast,
             getHistory, addToHistory, clearHistory,
             getBookmarks, isBookmarked, toggleBookmark, clearBookmarks, toggleTheme,
-            subscribeNewsletter, printArticle
+            subscribeNewsletter, printArticle, initLazyImages
         };
     }
 });
