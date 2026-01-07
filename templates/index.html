@@ -167,12 +167,13 @@
 
                 <!-- 分类磁贴 -->
                 <div class="category-tiles" v-if="categories.length > 0">
-                    <div class="category-tile" :class="{ active: !selectedCategory }" @click="filterByCategory(null)">
+                    <div class="category-tile fade-in-section" :class="{ active: !selectedCategory }" @click="filterByCategory(null)">
                         <div class="category-tile-icon">📚</div>
                         <div class="category-tile-name">全部</div>
                     </div>
-                    <div v-for="cat in categories" :key="cat.id" class="category-tile"
-                         :class="{ active: selectedCategory === cat.id }" @click="filterByCategory(cat.id)">
+                    <div v-for="(cat, index) in categories" :key="cat.id" class="category-tile fade-in-section"
+                         :class="{ active: selectedCategory === cat.id }" @click="filterByCategory(cat.id)"
+                         :style="{ transitionDelay: (index + 1) * 50 + 'ms' }">
                         <div class="category-tile-icon">📁</div>
                         <div class="category-tile-name">[[cat.name]]</div>
                     </div>
@@ -180,7 +181,7 @@
 
                 <!-- 文章列表 -->
                 <div class="article-list" v-if="articles && articles.length > 0">
-                    <article class="article-card" v-for="article in articles" :key="article.id">
+                    <article class="article-card fade-in-section" v-for="(article, index) in articles" :key="article.id" :style="{ transitionDelay: (index % 10) * 50 + 'ms' }">
                         <div class="article-card-header">
                             <span v-if="article.category_name" class="category-tag">[[article.category_name]]</span>
                             <div class="article-meta">
@@ -1288,7 +1289,68 @@ const app = Vue.createApp({
                     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
                 }
             });
+
+            // 滚动触发动画观察器
+            initScrollAnimations();
         });
+
+        // 滚动动画初始化
+        const initScrollAnimations = () => {
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                });
+
+                document.querySelectorAll('.fade-in-section').forEach(el => {
+                    observer.observe(el);
+                });
+            } else {
+                // 降级处理：直接显示所有元素
+                document.querySelectorAll('.fade-in-section').forEach(el => {
+                    el.classList.add('is-visible');
+                });
+            }
+        };
+
+        // 图片懒加载
+        const initLazyImages = () => {
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            if (img.dataset.src) {
+                                img.src = img.dataset.src;
+                                img.onload = () => img.classList.add('loaded');
+                                img.removeAttribute('data-src');
+                            }
+                            observer.unobserve(img);
+                        }
+                    });
+                }, {
+                    rootMargin: '50px 0px'
+                });
+
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    observer.observe(img);
+                });
+            } else {
+                // 降级处理：立即加载所有图片
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    img.classList.add('loaded');
+                });
+            }
+        };
 
         // 日期格式化
         const formatDate = (dateStr) => {

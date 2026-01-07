@@ -94,6 +94,23 @@ html {
   --font-serif: 'Newsreader', 'Noto Serif SC', Georgia, 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', Monaco, monospace;
 
+  /* 字体加载策略 - 避免 FOIT (Flash of Invisible Text) */
+  @font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Roboto'), local('Roboto-Regular');
+  }
+
+  @font-face {
+    font-family: 'Newsreader';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Newsreader'), local('Newsreader-Regular');
+  }
+
   /* ==================== 布局 ==================== */
   --header-height: 72px;
   --container-max: 1200px;
@@ -1304,6 +1321,38 @@ select.form-control {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 滚动触发动画 - 元素进入视口时显示 */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  will-change: opacity, transform;
+}
+
+.fade-in-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 无障碍：减弱动画时不使用滚动动画 */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-section {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* 图片懒加载占位符 */
+img[data-src] {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+img.loaded {
+  opacity: 1;
 }
 
 /* 页脚 */
