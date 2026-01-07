@@ -179,6 +179,131 @@ a:focus-visible {
   color: var(--white);
 }
 
+/* ==================== 骨架屏加载 ==================== */
+
+/* 骨架屏动画 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    var(--bg-tertiary) 50%,
+    var(--bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+
+/* 骨架屏文章卡片 */
+.skeleton-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  border: 1px solid var(--border-color);
+}
+
+.skeleton-card .skeleton-category {
+  width: 60px;
+  height: 20px;
+  margin-bottom: 12px;
+}
+
+.skeleton-card .skeleton-title {
+  width: 80%;
+  height: 24px;
+  margin-bottom: 8px;
+}
+
+.skeleton-card .skeleton-title:last-of-type {
+  width: 60%;
+}
+
+.skeleton-card .skeleton-excerpt {
+  width: 100%;
+  height: 16px;
+  margin-bottom: 6px;
+}
+
+.skeleton-card .skeleton-excerpt:nth-child(odd) {
+  width: 90%;
+}
+
+.skeleton-card .skeleton-meta {
+  width: 120px;
+  height: 16px;
+  margin-top: 16px;
+}
+
+/* 骨架屏分类标签 */
+.skeleton-tag {
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+/* 骨架屏统计信息 */
+.skeleton-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 80px;
+  height: 20px;
+}
+
+/* 骨架屏按钮 */
+.skeleton-btn {
+  width: 100px;
+  height: 40px;
+  border-radius: var(--radius);
+}
+
+/* 骨架屏列表 */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+}
+
+.skeleton-list-item .skeleton-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.skeleton-list-item .skeleton-text {
+  flex: 1;
+  height: 16px;
+}
+
+/* 减弱动画模式下的骨架屏 */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--bg-tertiary);
+  }
+}
+
 /* ==================== 无障碍改进 ==================== */
 
 /* 跳转到内容链接（键盘导航） */
@@ -755,6 +880,86 @@ input[type="button"],
 .category-tag:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 4px 12px hsla(var(--primary-hue), 85%, 60%, 0.4);
+}
+
+/* 分类颜色变体 */
+.category-tag.tech,
+.category-tag.AI,
+.category-tag.人工智能 {
+  background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.category-tag.tech:hover,
+.category-tag.AI:hover,
+.category-tag.人工智能:hover {
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.category-tag.software,
+.category-tag.软件 {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.category-tag.software:hover,
+.category-tag.软件:hover {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.category-tag.hardware,
+.category-tag.硬件 {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.category-tag.hardware:hover,
+.category-tag.硬件:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.category-tag.mobile,
+.category-tag.移动 {
+  background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+}
+
+.category-tag.mobile:hover,
+.category-tag.移动:hover {
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+}
+
+.category-tag.internet,
+.category-tag.互联网 {
+  background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+}
+
+.category-tag.internet:hover,
+.category-tag.互联网:hover {
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+}
+
+.category-tag.security,
+.category-tag.安全 {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.category-tag.security:hover,
+.category-tag.安全:hover {
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.category-tag.game,
+.category-tag.游戏 {
+  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+
+.category-tag.game:hover,
+.category-tag.游戏:hover {
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
 }
 
 .article-date {

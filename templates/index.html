@@ -232,7 +232,7 @@
                 <div class="article-list" v-if="articles && articles.length > 0">
                     <article class="article-card fade-in-section" v-for="(article, index) in articles" :key="article.id" :style="{ transitionDelay: (index % 10) * 50 + 'ms' }">
                         <div class="article-card-header">
-                            <span v-if="article.category_name" class="category-tag">[[article.category_name]]</span>
+                            <span v-if="article.category_name" class="category-tag" :class="article.category_name.toLowerCase().replace(/\s+/g, '-')">[[article.category_name]]</span>
                             <div class="article-meta">
                                 <span v-if="article.author_name" class="author">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
